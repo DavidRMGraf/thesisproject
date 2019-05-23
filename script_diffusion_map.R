@@ -91,15 +91,9 @@ lap <- matrix(data = NA, nrow = nrow(simil_red), ncol = nrow(simil_red))
 for (i in 1:nrow(simil_red)){
   for (j in 1:nrow(simil_red)){
     if (i == j){
-<<<<<<< HEAD
       lap[i, j] <- 1
     }else{
       lap[i, j] <- -simil_red[i, j]/sum(simil_red[i,])
-=======
-      lap[i, j] <- sum(simil_red[, j])
-    }else{
-      lap[i, j] <- -simil_red[i, j]
->>>>>>> 0c983f18b58b23d880f12190445846236e5a59dd
     }
   }
 }
@@ -112,4 +106,3 @@ for (i in 1:nrow(simil_red)){
 # Messungen/Zeilen der Ausgangstabllen einen Wert in der entsprechenden Variable zu. 
 
 eigen(lap, symmetric = FALSE)
-x
