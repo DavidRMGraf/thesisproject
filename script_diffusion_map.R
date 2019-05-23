@@ -19,7 +19,7 @@ mat <- matrix(vec, ncol=11)
 # wenn die Parameter sehr verschieden sind wie bei unserern Zensusdaten ist es gut die Spalten so zu normieren das jede 
 # spalte den Mittelwert 0 und Varianz 1 bekommt. 
 
-# standardize vector to mean = 0 and sd = 1 ----------------
+# standardize matrix columns to mean = 0 and sd = 1 --------
 
 for(i in 1:ncol(mat)){
   mat[, i] <- (mat[, i] - mean(mat[, i]))/sd(mat[, i]) 
@@ -31,8 +31,6 @@ for(i in 1:ncol(mat)){
 # einfach der Euklidische  Abstand im Parameterraum sein. Aus dem Abstandsma? machen wir ein ?hnlichkeitsma? mit 
 # S(x,y)=1/D(x,y). Diese ?hnlichkeit wird f?r all Paare von Zeilen. F?r einen Datensatz mit N Zeilen erhalten wir 
 # so eine NxN Matrix von ?hnlichkeiten, S. 
-#~~ beinhaltet die Matrix dann nicht auch jeweils Abstände von Null weil auf ihrer Diagonalen die Zeilen mit sich selbst verglichen werden?
-
 
 # calculating euclidean distance for matrix mat ------------
 
@@ -44,9 +42,11 @@ for (i in 1:nrow(mat)){
   }
 }
 
-# calculating degree of similarity--------------------------
+# calculating degree of similarity
 simil <- 1/eucdists
+diag(simil) <- 0
 
+#------------------------------------------------------------
 
 # 4) Thresholding: Wir Vertrauen der ?hnlichkeit nur wenn sie hinreichend gro? ist. In einigen Systemen weiss man 
 # wie gro?, gro? genug ist. Es funktioniert aber auch die einfache regel "Eine ?hnlichkeit zwischen zwei Messungen 
@@ -55,10 +55,38 @@ simil <- 1/eucdists
 
 #~~ welche threshold wollen wir wählen?
 
+simil_red <- matrix(data = NA, nrow = nrow(simil), ncol = nrow(simil))
+
+for (i in 1:nrow(simil)){
+  for (j in 1:nrow(simil)){
+    if (simil[i,j] < sort(simil[i, ], decreasing = T)[10]){
+      simil_red[i,j] <- 0
+    }else{
+      simil_red[i,j] <- simil[i,j]
+    }
+  }
+}
+
 # 5) Laplace Matrix:  Aus der S-Matrix machen wir eine Laplace Matrix L. Die Formel dazu ist 
 # L[i,j]= - S[i,j] f?r i,j verschieden und  L[i,i] = sum_j S[i,j]. Die Originalmethode verwendet die normierte 
 # Laplcematrix, in der Zeile i nochmal durch L[i,i] geteilt wird. (Also L[i,i] wird 1) - kann man machen die einfache 
-# Laplace matrix funktioniert in meiner Erfahrung genau so gut.  
+# Laplace matrix funktioniert in meiner Erfahrung genau so gut. 
+
+# calculate laplace-matrix----------------------------------
+lap <- matrix(data = NA, nrow = nrow(simil_red), ncol = nrow(simil_red))
+
+for (i in 1:nrow(simil_red)){
+  for (j in 1:nrow(simil_red)){
+    if (i == j){
+      lap[i, j] <- sum(simil_red[, j])
+    }else{
+      lap[i, j] <- -simil_red[i, j]
+    }
+  }
+}
+
+#-----------------------------------------------------------
+
 # 6) Eigenvektoren: Jetzt die Eigenvektoren und eigenwerte der Laplacematrix berechnen. Die eigenvektoren die am 
 # n?chsten an der null sind am wichtigsten sie sind die Hauptkomponenten des Datensatzes. Jedes eigenwert eigenvector 
 # paar representiert eine Variable die die Methode detektiert hat. Der entsprechende Eigenvector ordnet den einzelnen 
