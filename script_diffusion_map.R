@@ -68,6 +68,18 @@ for (i in 1:nrow(simil)){
 
 #-----------------------------------------------------------
 
+simil_red <- matrix(data = NA, nrow = nrow(simil), ncol = nrow(simil))
+
+for (i in 1:nrow(simil)){
+  for (j in 1:nrow(simil)){
+    if (simil[i,j] < sort(simil[i, ], decreasing = T)[10]){
+      simil_red[i,j] <- 0
+    }else{
+      simil_red[i,j] <- simil[i,j]
+    }
+  }
+}
+
 # 5) Laplace Matrix:  Aus der S-Matrix machen wir eine Laplace Matrix L. Die Formel dazu ist 
 # L[i,j]= - S[i,j] f?r i,j verschieden und  L[i,i] = sum_j S[i,j]. Die Originalmethode verwendet die normierte 
 # Laplcematrix, in der Zeile i nochmal durch L[i,i] geteilt wird. (Also L[i,i] wird 1) - kann man machen die einfache 
@@ -79,9 +91,15 @@ lap <- matrix(data = NA, nrow = nrow(simil_red), ncol = nrow(simil_red))
 for (i in 1:nrow(simil_red)){
   for (j in 1:nrow(simil_red)){
     if (i == j){
+<<<<<<< HEAD
       lap[i, j] <- 1
     }else{
       lap[i, j] <- -simil_red[i, j]/sum(simil_red[i,])
+=======
+      lap[i, j] <- sum(simil_red[, j])
+    }else{
+      lap[i, j] <- -simil_red[i, j]
+>>>>>>> 0c983f18b58b23d880f12190445846236e5a59dd
     }
   }
 }
