@@ -85,17 +85,21 @@ for (i in 1:nrow(simil)){
 # Laplace matrix funktioniert in meiner Erfahrung genau so gut. 
 
 # calculate laplace-matrix----------------------------------
-lap <- matrix(data = NA, nrow = nrow(simil_red), ncol = nrow(simil_red))
-
-for (i in 1:nrow(simil_red)){
-  for (j in 1:nrow(simil_red)){
-    if (i == j){
-      lap[i, j] <- 1
-    }else{
-      lap[i, j] <- -simil_red[i, j]/sum(simil_red[, j])
-    }
-  }
-}
+# lap <- matrix(data = NA, nrow = nrow(simil_red), ncol = nrow(simil_red))
+# 
+# for (i in 1:nrow(simil_red)){
+#   for (j in 1:nrow(simil_red)){
+#     if (i == j){
+#       lap[i, j] <- 1
+#     }else{
+#       lap[i, j] <- -simil_red[i, j]/sum(simil_red[, j])
+#     }
+#   }
+# }
+library(matrixLaplacian)
+lap <- matrixLaplacian(simil_red, plot2D = F, plot3D = F)
+#lap_mat <- matrix(unlist(lap$LaplacianMatrix), ncol = ncol(lap), byrow = TRUE)
+lap_mat <- lap$LaplacianMatrix
 
 #-----------------------------------------------------------
 
@@ -104,4 +108,4 @@ for (i in 1:nrow(simil_red)){
 # paar representiert eine Variable die die Methode detektiert hat. Der entsprechende Eigenvector ordnet den einzelnen 
 # Messungen/Zeilen der Ausgangstabllen einen Wert in der entsprechenden Variable zu. 
 
-eigen(lap, symmetric = T, only.values = T)
+eigen(lap_mat, symmetric = T, only.values = T)
