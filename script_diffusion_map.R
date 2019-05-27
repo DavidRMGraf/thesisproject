@@ -4,13 +4,12 @@ rm(list=ls())
 # Zusammenfassung der Methode:
   
 # 1) Daten als Tabelle: Wir wollen eine Tabelle haben die die einzelnen Messungen als Zeilen enth?lt und die 
-# verschiedenen Parameter die gemessen werden als Zeilen. Der Methode ist es relativ egal wie diese Tabelle konstruiert wird. Im prinzip eignen sich sogar Bilddateien als eingabedaten, Der Farbwert es ersten pixels ist dann der erste Parameter, der Farbwert des zweiten pixels der zweite parameter und so weiter. Wenn ihr die Daten in anderer Form habt sollte das auch funktionieren.
+# verschiedenen Parameter die gemessen werden als Spalten. Der Methode ist es relativ egal wie diese Tabelle konstruiert wird. Im prinzip eignen sich sogar Bilddateien als eingabedaten, Der Farbwert es ersten pixels ist dann der erste Parameter, der Farbwert des zweiten pixels der zweite parameter und so weiter. Wenn ihr die Daten in anderer Form habt sollte das auch funktionieren.
 
 # produce matrix to be replaced by data: -------------------
 
-set.seed(423)
+set.seed(426)
 vec <- runif(440)
-
 mat <- matrix(vec, ncol=11)
 
 #-----------------------------------------------------------
@@ -22,7 +21,7 @@ mat <- matrix(vec, ncol=11)
 # standardize matrix columns to mean = 0 and sd = 1 --------
 
 for(i in 1:ncol(mat)){
-  mat[, i] <- (mat[, i] - mean(mat[, i]))/sd(mat[, i]) 
+  mat[, i] <- (mat[, i] - mean(mat[, i]))/sd(mat[, i])
 }
 
 # ----------------------------------------------------------
@@ -58,27 +57,27 @@ simil_red <- matrix(data = NA, nrow = nrow(simil), ncol = nrow(simil))
 
 for (i in 1:nrow(simil)){
   for (j in 1:nrow(simil)){
-    if (simil[i,j] < sort(simil[i, ], decreasing = T)[10]){
-      simil_red[i,j] <- 0
+    if (simil[i, j] < min(c(sort(simil[i, ], decreasing = T)[10], sort(simil[, j], decreasing = T)[10]))){
+      simil_red[i, j] <- 0
     }else{
-      simil_red[i,j] <- simil[i,j]
+      simil_red[i, j] <- simil[i, j]
     }
   }
 }
 
 #-----------------------------------------------------------
 
-simil_red <- matrix(data = NA, nrow = nrow(simil), ncol = nrow(simil))
-
-for (i in 1:nrow(simil)){
-  for (j in 1:nrow(simil)){
-    if (simil[i,j] < sort(simil[i, ], decreasing = T)[10]){
-      simil_red[i,j] <- 0
-    }else{
-      simil_red[i,j] <- simil[i,j]
-    }
-  }
-}
+# simil_red <- matrix(data = NA, nrow = nrow(simil), ncol = nrow(simil))
+# 
+# for (i in 1:nrow(simil)){
+#   for (j in 1:nrow(simil)){
+#     if (simil[i,j] < sort(simil[i, ], decreasing = T)[10]){
+#       simil_red[i,j] <- 0
+#     }else{
+#       simil_red[i,j] <- simil[i,j]
+#     }
+#   }
+# }
 
 # 5) Laplace Matrix:  Aus der S-Matrix machen wir eine Laplace Matrix L. Die Formel dazu ist 
 # L[i,j]= - S[i,j] f?r i,j verschieden und  L[i,i] = sum_j S[i,j]. Die Originalmethode verwendet die normierte 
@@ -93,7 +92,7 @@ for (i in 1:nrow(simil_red)){
     if (i == j){
       lap[i, j] <- 1
     }else{
-      lap[i, j] <- -simil_red[i, j]/sum(simil_red[i,])
+      lap[i, j] <- -simil_red[i, j]/sum(simil_red[, j])
     }
   }
 }
@@ -105,4 +104,4 @@ for (i in 1:nrow(simil_red)){
 # paar representiert eine Variable die die Methode detektiert hat. Der entsprechende Eigenvector ordnet den einzelnen 
 # Messungen/Zeilen der Ausgangstabllen einen Wert in der entsprechenden Variable zu. 
 
-eigen(lap, symmetric = FALSE)
+eigen(lap, symmetric = T, only.values = T)
