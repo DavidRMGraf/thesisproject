@@ -15,7 +15,7 @@ sequ <- sequ[-(1:4), -1]
 results <- vector(length = ncol(sequ))
 
 for(i in 1:ncol(sequ)){
-  vec[i] <- length(as.numeric(sequ[,i])[as.numeric(sequ[,i])>=mean(as.numeric(sequ[,i]))+3*sd(as.numeric(sequ[,i]))])
+  results[i] <- length(as.numeric(sequ[,i])[as.numeric(sequ[,i])>=mean(as.numeric(sequ[,i]))+3*sd(as.numeric(sequ[,i]))])
 }
 
-hist(vec, main = sum(vec))
+hist(results, main = sum(results))
