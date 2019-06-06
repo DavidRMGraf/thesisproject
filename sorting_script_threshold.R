@@ -6,6 +6,7 @@ vec <- runif(440)
 mat <- matrix(vec, ncol=11)
 rm(vec)
 
+# system time at start:
 start.time <- Sys.time()
 
 #----
@@ -27,5 +28,6 @@ for (i in 1:ncol(mat)){
 # }
 # 
 
+# system time at end and difference between start and end (RUNTIME)
 end.time <- Sys.time()
 end.time - start.time
