@@ -46,3 +46,10 @@ print(ncol(sequ95)) # 2208
 print(ncol(sequ99)) # 10983
 print(ncol(sequK1)) # 225
 print(ncol(sequK2)) # 803
+
+## rank-abundance plots ----------------------------
+# for (i in 1:nrow(sequK2)){
+#   plot(1:ncol(sequK2), sort(sequK2[i,], decreasing=T))  
+# }
+plot(1:ncol(sequK2), sort(sequK2[7,], decreasing=T), type = "l")
+plot(1:ncol(sequ90), sort(sequ90[7,], decreasing=T))
