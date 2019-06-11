@@ -31,10 +31,6 @@ for (i in 1:nrow(sequ)){
 
 sequ99 <- sequ99[, colSums(sequ99)!=0]
 
-print(ncol(sequ90))
-print(ncol(sequ95))
-print(ncol(sequ99))
-
 ## thresholding variant 2 --------------------------
 keep.cols <- colSums(sequ)/sum(sequ)>=5e-04
 sequK1 <- sequ[, keep.cols]
@@ -44,5 +40,9 @@ keep.cols <- colSums(sequ)/sum(sequ)>=5e-05
 sequK2 <- sequ[, keep.cols]
 sequK2 <- sequK2[, colSums(sequK2)!=0]
 
+## comparison --------------------------------------
+print(ncol(sequ90))
+print(ncol(sequ95))
+print(ncol(sequ99))
 print(ncol(sequK1))
 print(ncol(sequK2))
