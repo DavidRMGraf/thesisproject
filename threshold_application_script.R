@@ -41,8 +41,8 @@ sequK2 <- sequ[, keep.cols]
 sequK2 <- sequK2[, colSums(sequK2)!=0]
 
 ## comparison --------------------------------------
-print(ncol(sequ90))
-print(ncol(sequ95))
-print(ncol(sequ99))
-print(ncol(sequK1))
-print(ncol(sequK2))
+print(ncol(sequ90)) # 1255
+print(ncol(sequ95)) # 2208
+print(ncol(sequ99)) # 10983
+print(ncol(sequK1)) # 225
+print(ncol(sequK2)) # 803
