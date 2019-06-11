@@ -53,3 +53,5 @@ print(ncol(sequK2)) # 803
 # }
 plot(1:ncol(sequK2), sort(sequK2[7,], decreasing=T), type = "l")
 plot(1:ncol(sequ90), sort(sequ90[7,], decreasing=T))
+
+
