@@ -3,7 +3,7 @@ rm(list=ls())
 
 library(matrixLaplacian)
 library(readxl)
-
+start.time <- Sys.time()
 ## own function definitions: ---------------------------------------------------------------------
 # threshapply to apply the thresholds to the data and remove all columns with no entries:
 threshapply <- function(input_data, method){
@@ -110,6 +110,8 @@ for(i in 1:ncol(elm$vectors)){
   ind.low[,i] <- order(elm$vectors[,i])[1:10]
 }
 
+end.time <- Sys.time()
+end.time-start.time
 
 
 #' namesfile[ind.high[, 1],] are the 10 most important large entries of the eigenvector corresponding to the lowest EV, 
