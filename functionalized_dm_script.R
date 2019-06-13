@@ -89,7 +89,21 @@ lap <- matrixLaplacian(testdata, plot2D = F, plot3D = F)
 lap_mat <- lap$LaplacianMatrix
 
 elm <- eigen(lap_mat)
-elm$values
 
-## beginning with smalles eigenvalue, look at positive and negative poles of the corresponding eigenvector
+## beginning with smallest eigenvalue, look at positive and negative poles of the corresponding eigenvector
 # -> relate those to stations from the station data sheet
+
+# for each column in vectors (or only for the first, say, 4) get the names of the 10 stations corresponding to
+# highest and lowest values, respectively
+
+ind.high <- matrix(NA, nrow = 10, ncol = ncol(elm$vectors))
+ind.low <- matrix(NA, nrow = 10, ncol = ncol(elm$vectors))
+for(i in 1:ncol(elm$vectors)){
+  ind.high[,i] <- order(elm$vectors[,i], decreasing = T)[1:10] 
+  ind.low[,i] <- order(elm$vectors[,i])[1:10]
+}
+
+#' namesfile[ind.high[1,],] are the 10 most important large entries of the eigenvector corresponding to the lowest EV, 
+#' namesfile[ind.low[1,],] are the 10 most important small entries -"-
+#' Thilo plotted the values of all stations in the first three EV against each other
+#' that's something i will do, too, to see interesting directions of the matrix 

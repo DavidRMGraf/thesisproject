@@ -108,4 +108,4 @@ lap_mat <- lap$LaplacianMatrix
 # paar representiert eine Variable die die Methode detektiert hat. Der entsprechende Eigenvector ordnet den einzelnen 
 # Messungen/Zeilen der Ausgangstabllen einen Wert in der entsprechenden Variable zu. 
 
-eigen(lap_mat, symmetric = T, only.values = T)
+eigen(lap_mat, symmetric = T)
