@@ -2,6 +2,7 @@
 rm(list=ls())
 
 library(matrixLaplacian)
+library(readxl)
 
 ## own function definitions: ---------------------------------------------------------------------
 # threshapply to apply the thresholds to the data and remove all columns with no entries:
@@ -75,17 +76,23 @@ simil_reducer <- function(simil){
 }
 
 
-set.seed(426)
-vec <- runif(440)
-testdata <- matrix(vec, ncol=11)
+# set.seed(426)
+# vec <- runif(440)
+# testdata <- matrix(vec, ncol=11)
+# 
+# testdata <- standardize(testdata)
+# testdata <- similarity(testdata)
+# testdata <- simil_reducer(testdata)
 
-testdata <- standardize(testdata)
-testdata <- similarity(testdata)
-testdata <- simil_reducer(testdata)
+sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";")
+sequ <- t(sequ)
 
+data <- threshapply(sequ, "0.05 percent")
+data <- standardize(data)
+data <- similarity(data)
+data <- simil_reducer(data)
 
-library(matrixLaplacian)
-lap <- matrixLaplacian(testdata, plot2D = F, plot3D = F)
+lap <- matrixLaplacian(data, plot2D = F, plot3D = F)
 lap_mat <- lap$LaplacianMatrix
 
 elm <- eigen(lap_mat)
@@ -103,7 +110,21 @@ for(i in 1:ncol(elm$vectors)){
   ind.low[,i] <- order(elm$vectors[,i])[1:10]
 }
 
-#' namesfile[ind.high[1,],] are the 10 most important large entries of the eigenvector corresponding to the lowest EV, 
-#' namesfile[ind.low[1,],] are the 10 most important small entries -"-
+
+
+#' namesfile[ind.high[, 1],] are the 10 most important large entries of the eigenvector corresponding to the lowest EV, 
+#' namesfile[ind.low[, 1],] are the 10 most important small entries -"-
 #' Thilo plotted the values of all stations in the first three EV against each other
 #' that's something i will do, too, to see interesting directions of the matrix 
+
+
+stat_names <- read_excel("Sequences_Hausgarten_station_data_revised.xlsx")
+
+stat_names[ind.high[,1],1]
+stat_names[ind.low[,1],1]
+
+stat_names[ind.high[,2],1]
+stat_names[ind.low[,2],1]
+
+# stat_names[ind.high[,3],1]
+# stat_names[ind.low[,3],1]
