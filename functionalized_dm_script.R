@@ -3,9 +3,10 @@ rm(list=ls())
 
 library(matrixLaplacian)
 library(readxl)
-start.time <- Sys.time()
 ## own function definitions: ---------------------------------------------------------------------
 # threshapply to apply the thresholds to the data and remove all columns with no entries:
+start.time <- Sys.time()
+
 threshapply <- function(input_data, method){
   if(!is.character(method)) stop('method must be character')
   if(!is.matrix(input_data)) stop('input_data must be a matrix')
@@ -87,7 +88,7 @@ simil_reducer <- function(simil){
 sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";")
 sequ <- t(sequ)
 
-data <- threshapply(sequ, "0.05 percent")
+data <- threshapply(sequ, "90 percent")
 data <- standardize(data)
 data <- similarity(data)
 data <- simil_reducer(data)
@@ -97,6 +98,11 @@ lap_mat <- lap$LaplacianMatrix
 
 elm <- eigen(lap_mat)
 
+write.csv2(elm$vectors, file = "DM_results_90percent.csv", row.names = F)
+end.time <- Sys.time()
+end.time-start.time
+
+#----------------
 ## beginning with smallest eigenvalue, look at positive and negative poles of the corresponding eigenvector
 # -> relate those to stations from the station data sheet
 
@@ -122,11 +128,13 @@ end.time-start.time
 
 stat_names <- read_excel("Sequences_Hausgarten_station_data_revised.xlsx")
 
-stat_names[ind.high[,1],1]
-stat_names[ind.low[,1],1]
+stat_names$year[ind.high[,3]]
+stat_names$station[ind.high[,3]]
 
-stat_names[ind.high[,2],1]
-stat_names[ind.low[,2],1]
+stat_names$year[ind.low[,3]]
+
+stat_names$year[ind.high[,3]]
+stat_names$year[ind.low[,2]]
 
 # stat_names[ind.high[,3],1]
 # stat_names[ind.low[,3],1]
