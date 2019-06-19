@@ -46,7 +46,7 @@ colnames(sequ) <- 1:ncol(sequ)
 stat_names <- read_excel("Sequences_Hausgarten_station_data_revised.xlsx")
 
 
-## alternative 1 ---------
+## alternative 1 - besser    ---------
 
 library(ggbiplot)
 #' from:
@@ -57,7 +57,7 @@ HGpca.1 <- prcomp(sequ, center = T, scale. = T)
 
 ggbiplot(HGpca.1, labels = stat_names$year)
 
-## alternative 2 --------
+## alternative 2 ---------------------
 
 library(labdsv)
 #' from:
