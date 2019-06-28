@@ -88,13 +88,21 @@ BCdist2 <- vegdist(sequ.red, method = "bray")
 pcoa.4 <- cmdscale(BCdist2)
 
 
-# PCoA based on Chao-matrix:
-
-Chdist <- vegdist(sequ, method = "chao")
-pcoa.5 <- cmdscale(Chdist)
-
-Chdist2 <- vegdist(sequ.red, method = "chao")
-pcoa.6 <- cmdscale(Chdist2)
+# # PCoA based on Chao-matrix:
+# 
+# Chdist <- vegdist(sequ, method = "chao")
+# pcoa.5 <- cmdscale(Chdist)
+# 
+# Chdist2 <- vegdist(sequ.red, method = "chao")
+# pcoa.6 <- cmdscale(Chdist2)
+# 
+# # PCoA based on Euclidean-matrix:
+# 
+# Eudist <- vegdist(sequ, method = "euclidean")
+# pcoa.7 <- cmdscale(Eudist)
+# 
+# Eudist2 <- vegdist(sequ.red, method = "euclidean")
+# pcoa.8 <- cmdscale(Eudist2)
 
 # vizualisations:
 opar <- par()
@@ -106,8 +114,11 @@ ordiplot(pcoa.2, main = "PCoA-MH-filt")
 ordiplot(pcoa.3, main = "PCoA-BC-full")
 ordiplot(pcoa.4, main = "PCoA-BC-filt")
 
-ordiplot(pcoa.5, main = "PCoa-Ch-full")
-ordiplot(pcoa.6, main = "PCoa-Ch-filt")
+# ordiplot(pcoa.5, main = "PCoa-Ch-full")
+# ordiplot(pcoa.6, main = "PCoa-Ch-filt")
+# 
+# ordiplot(pcoa.7, main = "PCoa-Eu-full")
+# ordiplot(pcoa.8, main = "PCoa-Eu-filt")
 par(opar)
 
 # comparison between full and filtered datasets:
@@ -118,7 +129,9 @@ mantel(MHdist, MHdist2)
 # p-value << 0.05 -> it is likely that there is a linear correlation between the two matrices
 mantel(BCdist, BCdist2)
 # same here
-mantel(Chdist, Chdist2)
+
+# mantel(Chdist, Chdist2)
+# mantel(Eudist, Eudist2)
 
 #' General Conclusion: distance matrices for two indices of distance (Bray-Curtis and Morisita-Horn) do not significantly
 #' differ between the filtered and the full dataset when 0.05-percent-filtering is applied!
