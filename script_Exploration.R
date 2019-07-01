@@ -136,6 +136,9 @@ mantel(BCdist, BCdist2)
 #' General Conclusion: distance matrices for two indices of distance (Bray-Curtis and Morisita-Horn) do not significantly
 #' differ between the filtered and the full dataset when 0.05-percent-filtering is applied!
 
+
+
+
 ## data transformation nach Carin ---------------------
 #' codaSeq-package is not available for R version 3.3.3!
 #' alternatives?
