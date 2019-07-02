@@ -37,6 +37,7 @@ library(ggplot2)
 library(readxl)
 library(vegan)
 library(ade4)
+
 ## script -----------------------------------------------------
 stat_names <- read_excel("Sequences_Hausgarten_station_data_revised.xlsx")
 
@@ -67,77 +68,102 @@ sequ.red <- threshapply(sequ, "0.05 percent")
 #' 
 
 ## Prinicple coordinate analysis ------------------------------------------------
+
 #' PCoA with 'vegan' as described in GUSTA ME:
 #' https://sites.google.com/site/mb3gustame/dissimilarity-based-methods/principal-coordinates-analysis
 #' 
 #' PCoA is performed on two indices of dissimilarity as calculated on the full and filtered dataset, respectively
 
+# PCoA based on Chao-matrix:
+
+Chdist <- vegdist(sequ, method = "chao")
+ord.5 <- cmdscale(Chdist)
+
+Chdist2 <- vegdist(sequ.red, method = "chao")
+ord.6 <- cmdscale(Chdist2)
+
 # PCoA on Morisita-Horn dissimilarity indices:
-MHdist <- vegdist(sequ, method="morisita")
-pcoa.1 <- cmdscale(MHdist)
-
-MHdist2 <- vegdist(sequ.red, method="morisita")
-pcoa.2 <- cmdscale(MHdist2)
-
-# PCoA on a more classical Bray-Curtis indices:
-
-BCdist <- vegdist(sequ, method = "bray")
-pcoa.3 <- cmdscale(BCdist)
-
-BCdist2 <- vegdist(sequ.red, method = "bray")
-pcoa.4 <- cmdscale(BCdist2)
-
-
-# # PCoA based on Chao-matrix:
+# MHdist <- vegdist(sequ, method="morisita")
+# ord.1 <- cmdscale(MHdist)
 # 
-# Chdist <- vegdist(sequ, method = "chao")
-# pcoa.5 <- cmdscale(Chdist)
+# MHdist2 <- vegdist(sequ.red, method="morisita")
+# ord.2 <- cmdscale(MHdist2)
 # 
-# Chdist2 <- vegdist(sequ.red, method = "chao")
-# pcoa.6 <- cmdscale(Chdist2)
+# # PCoA on a more classical Bray-Curtis indices:
 # 
+# BCdist <- vegdist(sequ, method = "bray")
+# ord.3 <- cmdscale(BCdist)
+# 
+# BCdist2 <- vegdist(sequ.red, method = "bray")
+# ord.4 <- cmdscale(BCdist2)
+#
 # # PCoA based on Euclidean-matrix:
 # 
 # Eudist <- vegdist(sequ, method = "euclidean")
-# pcoa.7 <- cmdscale(Eudist)
+# ord.7 <- cmdscale(Eudist)
 # 
 # Eudist2 <- vegdist(sequ.red, method = "euclidean")
-# pcoa.8 <- cmdscale(Eudist2)
+# ord.8 <- cmdscale(Eudist2)
+# 
+# # PCoA based on Jaccard index
+#
+# Jadist <- vegdist(sequ, method = "jaccard")
+# ord.9 <- cmdscale(Jadist)
+# 
+# Jadist2 <- vegdist(sequ.red, method = "jaccard")
+# ord.10 <- cmdscale(Jadist2)
 
 # vizualisations:
 opar <- par()
 par(mfrow = c(1,2))
 
-ordiplot(pcoa.1, main = "PCoA-MH-full")
-ordiplot(pcoa.2, main = "PCoA-MH-filt")
-
-ordiplot(pcoa.3, main = "PCoA-BC-full")
-ordiplot(pcoa.4, main = "PCoA-BC-filt")
-
-# ordiplot(pcoa.5, main = "PCoa-Ch-full")
-# ordiplot(pcoa.6, main = "PCoa-Ch-filt")
+#ordiplot(ord.5, main = "PCoA-Ch-full")
+#ordiplot(ord.6, main = "PCoA-Ch-filt")
+#
+# ordiplot(ord.1, main = "PCoA-MH-full")
+# ordiplot(ord.2, main = "PCoA-MH-filt")
 # 
-# ordiplot(pcoa.7, main = "PCoa-Eu-full")
-# ordiplot(pcoa.8, main = "PCoa-Eu-filt")
+# ordiplot(ord.3, main = "PCoA-BC-full")
+# ordiplot(ord.4, main = "PCoA-BC-filt")
+# 
+# ordiplot(ord.7, main = "PCoa-Eu-full")
+# ordiplot(ord.8, main = "PCoa-Eu-filt")
+# 
+# ordiplot(ord.9, main = "PCoa-Ja-full")
+# ordiplot(ord.10, main = "PCoa-Ja-filt")
+#' -> clear difference between filtered and non-filtered dataset as Jaccard index
+#' is based on presence/absence data
+
+
 par(opar)
 
 # comparison between full and filtered datasets:
 #' as described here:
 #' https://sites.google.com/site/mb3gustame/hypothesis-tests/the-mantel-test
 
-mantel(MHdist, MHdist2)
+#mantel(MHdist, MHdist2)
 # p-value << 0.05 -> it is likely that there is a linear correlation between the two matrices
-mantel(BCdist, BCdist2)
+#mantel(BCdist, BCdist2)
 # same here
 
-# mantel(Chdist, Chdist2)
+mantel(Chdist, Chdist2)
+# p-value < 0.05 -> linear correlation between the two distance matrices
+
 # mantel(Eudist, Eudist2)
 
 #' General Conclusion: distance matrices for two indices of distance (Bray-Curtis and Morisita-Horn) do not significantly
 #' differ between the filtered and the full dataset when 0.05-percent-filtering is applied!
 
+## clustering -----------------------------------------
+clust.Ch <- hclust(Chdist2, method = "complete")
+cutoff <- cutree(clust.Ch, 3)
 
+ordiplot(Chdist2)
+ordihull(Chdist2, cutoff)
+ordispider(Chdist2, cutoff, col = 'lightblue')
+ordiellipse(Chdist2, cutoff)
 
+#' wenn ich mir das hier so ansehe scheint clustering bei den OTU-Abundanzen recht sinnlos!
 
 ## data transformation nach Carin ---------------------
 #' codaSeq-package is not available for R version 3.3.3!
