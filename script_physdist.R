@@ -7,7 +7,12 @@ library(geosphere)
 ## script ------------------
 stations <- read_excel("Sequences_Hausgarten_station_data_revised.xlsx")
 
+# keep only the non-rubbish rows of the datasheet
 stations <- stations[stations$latitude<360 & !is.na(stations$latitude),]
+# calculate distance matrix in metres
+mat <- distm(stations[, 8:9], stations[, 8:9], fun = distVincentyEllipsoid)
+
+## station-wise only (optional)
 # uni <- unique(stations$station)
 # statcoord <- stations[stations$station == uni[1], ][1,]
 # 
@@ -18,5 +23,3 @@ stations <- stations[stations$latitude<360 & !is.na(stations$latitude),]
 # 
 # mat <- distm(statcoord[, 2:3], statcoord[, 2:3], fun = distVincentyEllipsoid)
 # rownames(mat) <- statcoord[,1]
-
-mat <- distm(stations[, 8:9], stations[, 8:9], fun = distVincentyEllipsoid)
