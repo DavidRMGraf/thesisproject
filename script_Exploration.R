@@ -169,8 +169,8 @@ ordiellipse(Chdist2, cutoff)
 #' codaSeq-package is not available for R version 3.3.3!
 #' alternatives?
 
-# library(zCompositions)
-# library(codaSeq)
-# 
+library(zCompositions)
+library(codaSeq)
+
 # f.n0 <- zCompositions::cmultRepl(sequ, method="CZM", label=0)
 # f.clr <- codaSeq::codaSeq.clr(f.n0)
