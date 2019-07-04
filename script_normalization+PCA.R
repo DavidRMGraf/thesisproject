@@ -33,6 +33,33 @@ threshapply <- function(input_data, method){
   output_data <- output_data[, colSums(output_data)!=0]
   return(output_data)
 }
+similarity <- function(input_data){
+  if(!is.matrix(input_data)) stop('input_data must be a matrix')
+  simil <- matrix(data = NA, nrow = nrow(input_data), ncol = nrow(input_data))
+  for (i in 1:nrow(input_data)){
+    for (j in 1:nrow(input_data)){
+      simil[i,j] <- dist(rbind(input_data[i, ], input_data[j, ]), method = "euclidean")
+    }
+  }
+  simil <- 1/simil
+  diag(simil) <- 0
+  return(simil)
+}
+simil_reducer <- function(simil){
+  if(!is.matrix(simil)) stop('Input must be a matrix')
+  simil_red <- matrix(data = NA, nrow = nrow(simil), ncol = nrow(simil))
+  for (i in 1:nrow(simil)){
+    for (j in 1:nrow(simil)){
+      if (simil[i, j] < min(c(sort(simil[i, ], decreasing = T)[10], sort(simil[, j], decreasing = T)[10]))){
+        simil_red[i, j] <- 0
+      }else{
+        simil_red[i, j] <- simil[i, j]
+      }
+    }
+  }
+  return(simil_red)
+}
+
 
 ## package CoDaSeq + Principal Coordinate Analysis -------------------
 
@@ -50,17 +77,44 @@ library(ggbiplot)
 
 f.n0 <- zCompositions::cmultRepl(sequ, method="CZM", label = 0)
 f.clr <- CoDaSeq::codaSeq.clr(f.n0, samples.by.row = T)
+
+
+## traditional analysis ---------------------------------------------
 clrdists <- robCompositions::aDist(f.clr)
 
 #' from:
 #' https://www.datacamp.com/community/tutorials/pca-analysis-r
 #' to perform elegant visualisations of PCA results 
 
-# PCA ---------------
+# PCA 
 sequ.pca <- prcomp(clrdists, center = T, scale. = T)
 ggbiplot(sequ.pca, labels = stat_names$Proben_ID_intern)
 
-# ## package DESeq -------------------
+## diffusion map ----------------------------------------------------
+#' takes the f.n0 base data line and applies the diffusion maps procedure
+#' to it
+
+data <- similarity(as.matrix(f.n0))
+data <- simil_reducer(data)
+
+lap <- matrixLaplacian(data, plot2D = F, plot3D = F)
+lap_mat <- lap$LaplacianMatrix
+
+elm <- eigen(lap_mat)
+
+ind.high <- matrix(NA, nrow = 10, ncol = ncol(elm$vectors))
+ind.low <- matrix(NA, nrow = 10, ncol = ncol(elm$vectors))
+for(i in 1:ncol(elm$vectors)){
+  ind.high[,i] <- order(elm$vectors[,i], decreasing = T)[1:10] 
+  ind.low[,i] <- order(elm$vectors[,i])[1:10]
+}
+
+# paste(stat_names$station[ind.high[,1]], stat_names$year[ind.high[,1]], stat_names$depth[ind.high[,1]], sep = "+")
+# paste(stat_names$station[ind.high[,2]], stat_names$year[ind.high[,2]], stat_names$depth[ind.high[,2]], sep = "+")
+# paste(stat_names$station[ind.high[,3]], stat_names$year[ind.high[,3]], stat_names$depth[ind.high[,3]], sep = "+")
+
+
+# ## package DESeq [obsolete] -------------------
 # 
 # # biocLite("DESeq")
 # # library(DESeq2)
