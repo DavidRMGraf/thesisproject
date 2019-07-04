@@ -90,7 +90,7 @@ clrdists <- robCompositions::aDist(f.clr)
 sequ.pca <- prcomp(clrdists, center = T, scale. = T)
 ggbiplot(sequ.pca, labels = stat_names$Proben_ID_intern)
 
-## diffusion map ----------------------------------------------------
+## diffusion map alt 1 ----------------------------------------------------
 #' takes the f.n0 base data line and applies the diffusion maps procedure
 #' to it
 
@@ -113,6 +113,25 @@ for(i in 1:ncol(elm$vectors)){
 # paste(stat_names$station[ind.high[,2]], stat_names$year[ind.high[,2]], stat_names$depth[ind.high[,2]], sep = "+")
 # paste(stat_names$station[ind.high[,3]], stat_names$year[ind.high[,3]], stat_names$depth[ind.high[,3]], sep = "+")
 
+## diffusion map alt 2 ------------------------------------------------------
+library(destiny)
+library(rgl)
+library(ggplot2)
+
+dm <- destiny::DiffusionMap(f.n0, n_eigs = 164)
+plot(dm, 1:2, col = as.factor(stat_names$year))
+
+plot3d(eigenvectors(dm)[, 1:3], col = as.factor(stat_names$depth), size = 3)
+
+qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$depth)) +scale_color_cube_helix()
+
+qplot(y = eigenvalues(dm))+
+  theme_minimal()+
+  labs(x ='Diffusion component (DC)', y ='Eigenvalue', title = "dm")
+
+qplot(y = eigen(lap_mat, only.values = T)$values)+
+  theme_minimal()+
+  labs(x ='Diffusion component (DC)', y ='Eigenvalue', title = "zu Fuß")
 
 # ## package DESeq [obsolete] -------------------
 # 
