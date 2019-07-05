@@ -121,8 +121,8 @@ end.time-start.time
 
 ind.high
 
-#' namesfile[ind.high[, 1],] are the 10 most important large entries of the eigenvector corresponding to the lowest EV, 
-#' namesfile[ind.low[, 1],] are the 10 most important small entries -"-
+#' namesfile[ind.high[, 165],] are the 10 most important large entries of the eigenvector corresponding to the lowest non-zero EV, 
+#' namesfile[ind.low[, 165],] are the 10 most important small entries -"-
 #' Thilo plotted the values of all stations in the first three EV against each other
 #' that's something i will do, too, to see interesting directions of the matrix 
 
