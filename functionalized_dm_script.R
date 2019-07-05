@@ -119,6 +119,7 @@ for(i in 1:ncol(elm$vectors)){
 end.time <- Sys.time()
 end.time-start.time
 
+ind.high
 
 #' namesfile[ind.high[, 1],] are the 10 most important large entries of the eigenvector corresponding to the lowest EV, 
 #' namesfile[ind.low[, 1],] are the 10 most important small entries -"-
@@ -128,13 +129,12 @@ end.time-start.time
 
 stat_names <- read_excel("Sequences_Hausgarten_station_data_revised.xlsx")
 
-stat_names$year[ind.high[,3]]
-stat_names$station[ind.high[,3]]
+stat_names$station[ind.high[,165]]
+stat_names$station[ind.low[,165]]
 
-stat_names$year[ind.low[,3]]
 
-stat_names$year[ind.high[,3]]
-stat_names$year[ind.low[,2]]
+stat_names$year[ind.high[,165]]
+stat_names$year[ind.low[,165]]
 
 # stat_names[ind.high[,3],1]
 # stat_names[ind.low[,3],1]

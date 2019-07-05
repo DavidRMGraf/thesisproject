@@ -74,6 +74,7 @@ library(zCompositions) #' to remove non-zero entries from the raw data matrix
 library(CoDaSeq) #' installed from tarball from ggloor's github repo on CoDaSeq
 library(robCompositions) #' to calculate the Aitchison distance matrix
 library(ggbiplot)
+library(matrixLaplacian)
 
 f.n0 <- zCompositions::cmultRepl(sequ, method="CZM", label = 0)
 f.clr <- CoDaSeq::codaSeq.clr(f.n0, samples.by.row = T)
@@ -109,7 +110,9 @@ for(i in 1:ncol(elm$vectors)){
   ind.low[,i] <- order(elm$vectors[,i])[1:10]
 }
 
-# paste(stat_names$station[ind.high[,1]], stat_names$year[ind.high[,1]], stat_names$depth[ind.high[,1]], sep = "+")
+
+
+paste(stat_names$station[ind.high[,1]], stat_names$year[ind.high[,165]], stat_names$depth[ind.high[,1]], sep = "+")
 # paste(stat_names$station[ind.high[,2]], stat_names$year[ind.high[,2]], stat_names$depth[ind.high[,2]], sep = "+")
 # paste(stat_names$station[ind.high[,3]], stat_names$year[ind.high[,3]], stat_names$depth[ind.high[,3]], sep = "+")
 
@@ -119,11 +122,16 @@ library(rgl)
 library(ggplot2)
 
 dm <- destiny::DiffusionMap(f.n0, n_eigs = 164)
-plot(dm, 1:2, col = as.factor(stat_names$year))
+plot(dm, 1:2, col = as.factor(stat_names$year))   # colour legend correct??
 
 plot3d(eigenvectors(dm)[, 1:3], col = as.factor(stat_names$depth), size = 3)
+plot3d(eigenvectors(dm)[, 1:3], col = unique(as.factor(stat_names$year)), size = 3)
+legend3d('topright', legend = unique(as.factor(stat_names$year)),pch = 16, col = unique(as.factor(stat_names$year)), cex=1)
 
 qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$depth)) +scale_color_cube_helix()
+qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$year)) +scale_color_cube_helix()
+qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$latitude)) +scale_color_cube_helix()
+qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$longitude)) +scale_color_cube_helix()
 
 qplot(y = eigenvalues(dm))+
   theme_minimal()+
