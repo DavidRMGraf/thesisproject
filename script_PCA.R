@@ -37,7 +37,7 @@ library(ggplot2)
 library(readxl)
 ## script -----------------------------------------------------
 
-sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";")
+sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";", header = F)
 sequ <- t(sequ)
 
 sequ <- threshapply(sequ, "0.05 percent")

@@ -85,7 +85,7 @@ simil_reducer <- function(simil){
 # testdata <- similarity(testdata)
 # testdata <- simil_reducer(testdata)
 
-sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";")
+sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";", header = F)
 sequ <- t(sequ)
 
 data <- threshapply(sequ, "90 percent")

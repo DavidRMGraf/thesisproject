@@ -1,7 +1,7 @@
 # comparison of thresholds - script
 rm(list=ls())
 ## reading in data --------------------------------
-sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";")
+sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";", header = F)
 sequ <- t(sequ)
 # data frame is now structured with OTUs in columsn and stations in rows
 

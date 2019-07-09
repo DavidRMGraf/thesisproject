@@ -45,7 +45,7 @@ statdiff <- length(stat_names$Proben_ID_intern)-length(unique(stat_names$Proben_
 #' difference of 11 (!) stations that are duplicated in the dataset!
 #' 
 
-sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";")
+sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";", header = F)
 sequ <- t(sequ)
 sequ.red <- threshapply(sequ, "0.05 percent")
 
