@@ -73,3 +73,12 @@ countdat$phylum <- as.character(countdat$phylum)
 ggplot(countdat, aes(x=phylum, y = tot_sum))+
   geom_histogram(stat = "identity")+
   coord_flip()
+
+
+countdat <- ddply(taxos_left, ("kingdom"), summarize,
+                  tot_sum = sum(count, na.rm =F))
+countdat$kingdom <- as.character(countdat$kingdom)
+
+ggplot(countdat, aes(x=kingdom, y = tot_sum))+
+  geom_histogram(stat = "identity")+
+  coord_flip()
