@@ -165,29 +165,8 @@ ordiellipse(Chdist2, cutoff)
 
 #' wenn ich mir das hier so ansehe scheint clustering bei den OTU-Abundanzen recht sinnlos!
 
-## data transformation nach Carin ---------------------
-#' codaSeq-package is not available for R version 3.3.3!
-#' alternatives?
-#' 
 sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";")
 sequ <- t(sequ)
 sequ.red <- threshapply(sequ, "0.05 percent")
 
-# PCA - moved to script_normalization_methods -----------------
-#' library(zCompositions) #' to remove non-zero entries from the raw data matrix
-#' library(CoDaSeq) #' installed from tarball from ggloor's github repo on CoDaSeq
-#' library(robCompositions) #' to calculate the Aitchison distance matrix
-#' library(ggbiplot)
-#' 
-#' f.n0 <- zCompositions::cmultRepl(sequ.red, method="CZM", label = 0)
-#' f.clr <- CoDaSeq::codaSeq.clr(f.n0, samples.by.row = T)
-#' clrdists <- robCompositions::aDist(f.clr)
-#' # clrdists2 <- dist(f.clr)
-#' # sum(clrdists == clrdists2)
-#' 
-#' #' from:
-#' #' https://www.datacamp.com/community/tutorials/pca-analysis-r
-#' #' to perform elegant visualisations of PCA results 
-#' 
-#' sequ.pca <- prcomp(clrdists, center = T, scale. = T)
-#' ggbiplot(sequ.pca, labels = NA)
+

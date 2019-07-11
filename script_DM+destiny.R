@@ -1,8 +1,20 @@
-# variance normalization application and Principa Component Analysis script
+# script to calculate both alternative approaches to the Diffusion Map method
+#' also includes the normalization part from Carina
+
 rm(list=ls())
 graphics.off()
 
+## packages ----------------------------------------------------
 library(readxl)
+library(zCompositions) #' to remove non-zero entries from the raw data matrix
+BiocManager::install("BiocParallel")
+library(CoDaSeq) #' installed from tarball from ggloor's github repo on CoDaSeq
+library(robCompositions) #' to calculate the Aitchison distance matrix
+library(ggbiplot)
+library(matrixLaplacian)
+library(destiny)
+library(rgl)
+library(ggplot2)
 
 ## functions --------------------------------------------------
 threshapply <- function(input_data, method){
@@ -70,12 +82,8 @@ sequ <- threshapply(sequ, "0.05 percent")
 
 stat_names <- read_excel("Sequences_Hausgarten_station_data_revised.xlsx")
 
-library(zCompositions) #' to remove non-zero entries from the raw data matrix
-library(CoDaSeq) #' installed from tarball from ggloor's github repo on CoDaSeq
-library(robCompositions) #' to calculate the Aitchison distance matrix
-library(ggbiplot)
-library(matrixLaplacian)
 
+# standardize data:
 f.n0 <- zCompositions::cmultRepl(sequ, method="CZM", label = 0)
 f.clr <- CoDaSeq::codaSeq.clr(f.n0, samples.by.row = T)
 
@@ -110,63 +118,82 @@ for(i in 1:ncol(elm$vectors)){
   ind.low[,i] <- order(elm$vectors[,i])[1:10]
 }
 
+## plotting results
+
+high <- data.frame("first" = elm$vectors[,1], "second" = elm$vectors[,2],
+                   year = as.factor(stat_names$year),
+                   depth = -as.numeric(stat_names$depth),
+                   count = 1:166)
+low <- data.frame("penult" = elm$vectors[,165], "antepen" = elm$vectors[,164],
+                  year = as.factor(stat_names$year),
+                  depth = -as.numeric(stat_names$depth),
+                  count = 1:166)
+
+ggplot(high, aes(x = first, y = second, col = year))+geom_point()
+
+
+ggplot(low, aes(x = penult, y = antepen, col = depth))+
+  geom_point()+
+  labs(title = "Plot of the penult against the antepen",
+       subtitle = "seems to pick up depth signal!")
+
+
+antepen.cor <- cor.test(low$depth, low$antepen)
+antepen.lm <- lm(antepen ~ depth, data = low)
+
+subt <- paste("correlation coefficient ", round(antepen.cor$estimate,2),
+              " for antepen~depth, R^2=", round(summary(antepen.lm)$r.squared,3))
+pen.cor <- cor.test(low$depth, low$penult)
+
+  
+ggplot(low, aes(y = antepen, x = depth, col = year))+
+  geom_point()+
+  geom_smooth(method = "lm",
+              inherit.aes = FALSE,
+              aes(x=depth, y = antepen),
+              se=F)+
+  labs(title = "depth against antepen. EV",
+       subtitle = subt)
+
 
 
 paste(stat_names$station[ind.high[,1]], stat_names$year[ind.high[,165]], stat_names$depth[ind.high[,1]], sep = "+")
-# paste(stat_names$station[ind.high[,2]], stat_names$year[ind.high[,2]], stat_names$depth[ind.high[,2]], sep = "+")
-# paste(stat_names$station[ind.high[,3]], stat_names$year[ind.high[,3]], stat_names$depth[ind.high[,3]], sep = "+")
 
 ## diffusion map alt 2 ------------------------------------------------------
-library(destiny)
-library(rgl)
-library(ggplot2)
 
 dm <- destiny::DiffusionMap(f.n0, n_eigs = 164)
-plot(dm, 1:2, col = as.factor(stat_names$year))   # colour legend correct??
 
-plot3d(eigenvectors(dm)[, 1:3], col = as.factor(stat_names$depth), size = 3)
-plot3d(eigenvectors(dm)[, 1:3], col = unique(as.factor(stat_names$year)), size = 3)
-legend3d('topright', legend = unique(as.factor(stat_names$year)),pch = 16, col = unique(as.factor(stat_names$year)), cex=1)
+#' old plots
+# plot(dm, 1:2, col = as.factor(stat_names$year))   # colour legend correct??
+# 
+# plot3d(eigenvectors(dm)[, 1:3], col = as.factor(stat_names$depth), size = 3)
+# plot3d(eigenvectors(dm)[, 1:3], col = unique(as.factor(stat_names$year)), size = 3)
+# legend3d('topright', legend = unique(as.factor(stat_names$year)),pch = 16, col = unique(as.factor(stat_names$year)), cex=1)
+
+dmextract <- data.frame(DC1 = dm$DC1, DC2 = dm$DC2,
+                        year = as.factor(stat_names$year),
+                        depth = -as.numeric(stat_names$depth))
+
+ggplot(data = dmextract, aes(x = DC1, y = DC2, col = depth))+
+  geom_point()+
+  labs(title = "destiny DM",
+       subtitle = "auch Tiefensignal?")
+
+ggplot(data = dmextract, aes(x = depth, y = DC2, col = depth))+
+  geom_point()+
+  geom_smooth(method = "lm",
+              se=F)
+
 
 qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$depth)) +scale_color_cube_helix()
 qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$year)) +scale_color_cube_helix()
-qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$latitude)) +scale_color_cube_helix()
-qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$longitude)) +scale_color_cube_helix()
 
-qplot(y = eigenvalues(dm))+
-  theme_minimal()+
-  labs(x ='Diffusion component (DC)', y ='Eigenvalue', title = "dm")
 
-qplot(y = eigen(lap_mat, only.values = T)$values)+
-  theme_minimal()+
-  labs(x ='Diffusion component (DC)', y ='Eigenvalue', title = "zu Fuß")
-
-# ## package DESeq [obsolete] -------------------
+# #' vergleich der Eigenvektoren
+# qplot(y = eigenvalues(dm))+
+#   theme_minimal()+
+#   labs(x ='Diffusion component (DC)', y ='Eigenvalue', title = "dm")
 # 
-# # biocLite("DESeq")
-# # library(DESeq2)
-# # 
-# # sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";")
-# # sequ <- t(sequ)
-# # sequ <- threshapply(sequ, "0.05 percent")
-# # #sequ <- data.frame(t(sequ))
-# # 
-# # stat_names <- read_excel("Sequences_Hausgarten_station_data_revised.xlsx")
-# # 
-# # 
-# # # sequ <- newCountDataSet(sequ, conditions = stat_names$station)
-# # # cell_ij in the i-th row and the j-th column includes reads of gene i in sample j
-# # # this is how it is supposed to be, based on the package documentation (https://fckaf.de/zqn)
-# # 
-# # sequ <- estimateSizeFactors(sequ)
-# # 
-# # sequBlind <- estimateDispersions(sequ, method = "blind")
-# # 
-# # # der resultiert mit jeder Möglichen Method in einem Fehler weil
-# # # 'glm.fit: algorithm did not converge'
-# # 
-# # vsd = varianceStabilizingTransformation(sequ)
-# # 
-# # ?estimateDispersions
-# # 
-# 
+# qplot(y = eigen(lap_mat, only.values = T)$values)+
+#   theme_minimal()+
+#   labs(x ='Diffusion component (DC)', y ='Eigenvalue', title = "zu Fuß")
