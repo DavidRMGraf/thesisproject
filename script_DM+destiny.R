@@ -161,7 +161,8 @@ paste(stat_names$station[ind.high[,1]], stat_names$year[ind.high[,165]], stat_na
 
 ## diffusion map alt 2 ------------------------------------------------------
 
-dm <- destiny::DiffusionMap(f.n0, n_eigs = 164)
+dm <- destiny::DiffusionMap(f.n0, n_eigs = 164, k = 10)
+
 
 #' old plots
 # plot(dm, 1:2, col = as.factor(stat_names$year))   # colour legend correct??
@@ -174,26 +175,18 @@ dmextract <- data.frame(DC1 = dm$DC1, DC2 = dm$DC2,
                         year = as.factor(stat_names$year),
                         depth = -as.numeric(stat_names$depth))
 
+
 ggplot(data = dmextract, aes(x = DC1, y = DC2, col = depth))+
   geom_point()+
   labs(title = "destiny DM",
        subtitle = "auch Tiefensignal?")
 
-ggplot(data = dmextract, aes(x = depth, y = DC2, col = depth))+
+ggplot(data = dmextract, aes(x = -depth, y = DC2, col = depth))+
   geom_point()+
   geom_smooth(method = "lm",
               se=F)
 
 
-qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$depth)) +scale_color_cube_helix()
-qplot(DC1, DC2, data = dm, colour =as.factor(stat_names$year)) +scale_color_cube_helix()
-
-
-# #' vergleich der Eigenvektoren
-# qplot(y = eigenvalues(dm))+
-#   theme_minimal()+
-#   labs(x ='Diffusion component (DC)', y ='Eigenvalue', title = "dm")
-# 
-# qplot(y = eigen(lap_mat, only.values = T)$values)+
-#   theme_minimal()+
-#   labs(x ='Diffusion component (DC)', y ='Eigenvalue', title = "zu Fuß")
+destdm.cor <- cor.test(dmextract$depth, dmextract$DC2)
+destdm.lm <- lm(DC2 ~ depth, data = dmextract)
+summary(destdm.lm)
