@@ -151,7 +151,7 @@ ggplot(low, aes(y = antepen, x = depth, col = year))+
   geom_smooth(method = "lm",
               inherit.aes = FALSE,
               aes(x=depth, y = antepen),
-              se=F)+
+              se=T)+
   labs(title = "depth against antepen. EV",
        subtitle = subt)
 
