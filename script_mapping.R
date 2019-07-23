@@ -13,7 +13,7 @@ stat_dat <- read_xlsx("Sequences_Hausgarten_station_data_revised.xlsx")
 # Basic plot of this shape file:
 
 plot(all_oce,
-     xlim = c(-20, 20),
+     xlim = c(-19, 15),
      ylim = c(77, 77.5),
      col = "white",
      bg = "black")
@@ -21,5 +21,5 @@ plot(all_oce,
 stat_dat <- stat_dat[order(stat_dat$year),]
 points(stat_dat$longitude, stat_dat$latitude,
        col = stat_dat$year-2008,
-       pch = 20)
-legend("bottom", legend = as.character(unique(stat_dat$year)), pch = 20, col = unique(stat_dat$year)-2008, horiz = T)
+       pch = 16)
+legend("bottom", legend = as.character(unique(stat_dat$year)), pch = 16, col = unique(stat_dat$year)-2008, horiz = T)
