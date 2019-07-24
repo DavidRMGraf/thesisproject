@@ -1,4 +1,4 @@
-## script to perform the regressions on distance matrices
+## script to perform the regressions on distance matrices - 24.07.19
 rm(list=ls())
 graphics.off()
 
@@ -15,8 +15,6 @@ sequ <- readRDS("sequences_thresh_applied.rds")
 
 # determine which columns to keep, based on physical dataset:
 col2keep <- complete.cases(phys_oce)
-#' here, we exclude the two 'vertippt' stations as they dont have
-#' coordinates!
 
 # reducing physical oceanography dataset:
 phys_oce <- phys_oce[col2keep,]

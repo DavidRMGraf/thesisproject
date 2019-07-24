@@ -1,4 +1,6 @@
-# script diffusion map complete with otus, physical data (and optionally nutrients!)
+# script diffusion map complete - 24.07.19
+#with otus, physical data (and optionally nutrients!)
+
 rm(list = ls())
 graphics.off()
 
@@ -6,34 +8,6 @@ graphics.off()
 library(readxl)
 
 ## functions --------------------------------------------------
-threshapply <- function(input_data, method){
-  if(!is.character(method)) stop('method must be character')
-  if(!is.matrix(input_data)) stop('input_data must be a matrix')
-  if (method=="90 percent"){
-    for (i in 1:nrow(input_data)){
-      output_data <- input_data
-      output_data[i, order(input_data[i, ], decreasing=T)[cumsum(input_data[i, order(input_data[i, ], decreasing=T)])/sum(input_data[i, ])>0.90]] <- 0
-    }
-  }else if(method == "95 percent"){
-    for (i in 1:nrow(input_data)){
-      output_data <- input_data
-      output_data[i, order(input_data[i, ], decreasing=T)[cumsum(input_data[i, order(input_data[i, ], decreasing=T)])/sum(input_data[i, ])>0.95]] <- 0
-    }
-  }else if(method == "99 percent"){
-    for (i in 1:nrow(input_data)){
-      output_data <- input_data
-      output_data[i, order(input_data[i, ], decreasing=T)[cumsum(input_data[i, order(input_data[i, ], decreasing=T)])/sum(input_data[i, ])>0.99]] <- 0
-    }
-  }else if(method == "0.05 percent"){
-    keep.cols <- colSums(input_data)/sum(input_data)>=5e-04
-    output_data <- input_data[, keep.cols]
-  }else if(method == "0.005 percent"){
-    keep.cols <- colSums(input_data)/sum(input_data)>=5e-05
-    output_data <- input_data[, keep.cols]
-  }
-  output_data <- output_data[, colSums(output_data)!=0]
-  return(output_data)
-}
 similarity <- function(input_data){
   if(!is.matrix(input_data)) stop('input_data must be a matrix')
   simil <- matrix(data = NA, nrow = nrow(input_data), ncol = nrow(input_data))
@@ -62,27 +36,51 @@ simil_reducer <- function(simil){
 }
 
 ## data -------------------------------------------------------
-sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";", header = F)
-sequ <- t(sequ)
-sequ <- threshapply(sequ, "0.05 percent")
+# get physical oceanography data
+phys_oce <- readRDS("physical_oceanography_data_all_years.rds")
 
-phys <- read.csv("physical_data_matrix.csv", header = T)[, 12:22]
+#remove autocorrelated values from the physical oceanography dataset:
+phys_oce.sub.all <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit",
+                                                "NO3_mumol_l", "NO2_mumol_l", "SiOH4_mumol_l", "PO4_mumol_l"))
+phys_oce.sub.phy <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit"))
 
-for(i in 1:ncol(phys)){print(colnames(phys)[i]); print(sum(is.na(phys[,i])))}
+## cases need to be complete.cases AND the duplicates need to be excluded:
+columns2keep.all <- complete.cases(phys_oce.sub.all) & phys_oce$keep == 1   
+columns2keep.phy <- complete.cases(phys_oce.sub.phy) & phys_oce$keep == 1
 
+phys_oce.sub.all <- phys_oce.sub.all[columns2keep.all,]
+phys_oce.sub.phy <- phys_oce.sub.phy[columns2keep.phy,]
 
-data <- as.matrix(cbind(sequ, phys))
+# get sequences, 0.05 percent threshold applied
+sequ <- readRDS("sequences_thresh_applied.rds")
+dim(sequ)
 
-stat_names <- read_excel("Sequences_Hausgarten_station_data_revised.xlsx")
+sequ.sub.all <- sequ[columns2keep.all,]
+sequ.sub.phy <- sequ[columns2keep.phy,]
+
+# get station names from the phys_oce datasheet:
+stat_names <- subset(phys_oce, select = c("Proben_ID_intern", "date", "depth",
+                                          "year", "latitude", "longitude"))
+stat_names.all <- stat_names[columns2keep.all,]
+stat_names.phy <- stat_names[columns2keep.phy,]
+
 
 ## DM --------------------------------------------------------
 # variance-stabilizing transformation:
-f.n0 <- zCompositions::cmultRepl(sequ, method="CZM", label = 0)
-f.clr <- CoDaSeq::codaSeq.clr(f.n0, samples.by.row = T)
+
+f.n0.all <- zCompositions::cmultRepl(sequ.sub.all, method="CZM", label = 0)
+f.n0.phy <- zCompositions::cmultRepl(sequ.sub.phy, method="CZM", label = 0)
+
+f.clr.all <- CoDaSeq::codaSeq.clr(f.n0.all, samples.by.row = T)
+f.clr.phy <- CoDaSeq::codaSeq.clr(f.n0.phy, samples.by.row = T)
 
 # DM (Thilo's method)
-data <- similarity(as.matrix(f.n0))
-data <- simil_reducer(data)
+data.all <- similarity(as.matrix(f.n0.all))
+data.phy <- similarity(as.matrix(f.n0.phy))
+
+data.all <- simil_reducer(data.all)
+data.pyh <- simil_reducer(data.phy)
+
 
 lap <- matrixLaplacian(data, plot2D = F, plot3D = F)
 lap_mat <- lap$LaplacianMatrix

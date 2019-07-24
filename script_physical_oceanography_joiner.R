@@ -52,18 +52,22 @@ sequ <- threshapply(sequ, "0.05 percent")
 
 saveRDS(sequ, sequence.export.name)
 
+
 # reading in the data on physical oceanography
-stat_names <- read.csv("stat_names_physical_data.csv", header = T)
-stat_names$Proben_ID_intern <- as.character.factor(stat_names$Proben_ID_intern)
-stat_names$sample_ID <- as.character.factor(stat_names$sample_ID)
-stat_names$date <- as.character.factor(stat_names$date)
-stat_names$ARK_cruise_ID <- as.character.factor(stat_names$ARK_cruise_ID)
-stat_names$cruise <- as.character.factor(stat_names$cruise)
+stat_old <- readxl::read_xlsx("Sequences_Hausgarten_station_data_revised.xlsx")
+stat_new <- read.csv("stat_names_physical_data.csv", header = T)
+
+stat_names <- cbind(stat_old, stat_new[, 11:ncol(stat_new)])
+
+stat_names$date <- as.character(stat_names$date)
 stat_names$Date_char <- as.character.factor(stat_names$Date_char)
-stat_names$Proben_ID_intern[duplicated(stat_names$Proben_ID_intern)] <- paste0(stat_names$Proben_ID_intern[duplicated(stat_names$Proben_ID_intern)], "_secmeas")
+
+#stat_names$Proben_ID_intern[duplicated(stat_names$Proben_ID_intern)] <- paste0(stat_names$Proben_ID_intern[duplicated(stat_names$Proben_ID_intern)], "_secmeas")
 
 # preparing the data on physical oceanography
-phys_oce <- stat_names[, c(1,3,4,5,9,10)]
+phys_oce <- stat_names[, c(1,3,4,5,8,9,10)]
+
+
 # remove all non-complete cases, leaving out the coordinates
 for(i in 12:ncol(stat_names)-1){
   if(complete.cases(t(stat_names[,i]))){
@@ -79,8 +83,9 @@ stat_names <- read.csv("stat_names_nutrient_data.csv", header = T)
 # joining the datasets on physical oceanography and nutrient data:
 n <- names(phys_oce)
 phys_oce <- cbind(phys_oce, stat_names[,13:16])
-str(phys_oce)
 
 phys_oce$Date_char <- as.character.factor(phys_oce$Date_char)
+str(phys_oce)
 
 saveRDS(phys_oce, phys.oce.export.name)
+
