@@ -71,6 +71,12 @@ stat_names.phy <- stat_names[columns2keep.phy,]
 f.n0.all <- zCompositions::cmultRepl(sequ.sub.all, method="CZM", label = 0)
 f.n0.phy <- zCompositions::cmultRepl(sequ.sub.phy, method="CZM", label = 0)
 
+# physical data oder nutrients+physical data dazu?
+
+# f.n0.all <- cbind(f.n0.all, phys_oce.sub.all)
+# f.n0.phy <- cbind(f.n0.phy, phys_oce.sub.phy)
+
+
 f.clr.all <- CoDaSeq::codaSeq.clr(f.n0.all, samples.by.row = T)
 f.clr.phy <- CoDaSeq::codaSeq.clr(f.n0.phy, samples.by.row = T)
 
