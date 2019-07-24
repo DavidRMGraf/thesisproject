@@ -2,10 +2,15 @@
 rm(list=ls())
 graphics.off()
 
+library(ecodist)
+library(geosphere)
+library(vegan)
+
 #script -----------------------------------------------------------
 # get physical oceanography data
 phys_oce <- readRDS("physical_oceanography_data_all_years.rds")
-# get sequences
+
+# get sequences, 0.05 percent threshold applied
 sequ <- readRDS("sequences_thresh_applied.rds")
 
 # determine which columns to keep, based on physical dataset:
@@ -41,7 +46,5 @@ names(d) <- c('bray.sim','space','time')
 lower  <- lapply(d, ecodist::lower)
 d      <- as.data.frame(lapply(lower, c))
 
-
 m <- ecodist::MRM(bray.sim ~ space + time, data = d); m
-
 

@@ -8,6 +8,10 @@
 rm(list = ls())
 graphics.off()
 
+## savenames ---------------
+phys.oce.export.name <- "physical_oceanography_data_all_years.rds"
+sequence.export.name <- "sequences_thresh_applied.rds"
+
 ## packages ----------------
 library(readxl)
 
@@ -46,6 +50,8 @@ sequ <- read.csv("Sequences_Hausgarten2009-2016_ohne_header.csv", sep = ";", hea
 sequ <- t(sequ)
 sequ <- threshapply(sequ, "0.05 percent")
 
+saveRDS(sequ, sequence.export.name)
+
 # reading in the data on physical oceanography
 stat_names <- read.csv("stat_names_physical_data.csv", header = T)
 stat_names$Proben_ID_intern <- as.character.factor(stat_names$Proben_ID_intern)
@@ -58,6 +64,7 @@ stat_names$Proben_ID_intern[duplicated(stat_names$Proben_ID_intern)] <- paste0(s
 
 # preparing the data on physical oceanography
 phys_oce <- stat_names[, c(1,3,4,5,9,10)]
+# remove all non-complete cases, leaving out the coordinates
 for(i in 12:ncol(stat_names)-1){
   if(complete.cases(t(stat_names[,i]))){
     n <- names(phys_oce)
@@ -76,4 +83,4 @@ str(phys_oce)
 
 phys_oce$Date_char <- as.character.factor(phys_oce$Date_char)
 
-saveRDS(phys_oce, "physical_oceanography_data_all_years.rds")
+saveRDS(phys_oce, phys.oce.export.name)
