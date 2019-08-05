@@ -95,11 +95,9 @@ stat_names <- subset(phys_oce, select = c("Proben_ID_intern", "date", "depth",
 # reduce
 stat_names.all <- stat_names[columns2keep.all,]
 stat_names.phy <- stat_names[columns2keep.phy,]
-
+### this part was taken from the universal header! (END) ----
 # remove unwanted filters, original datasets 
 rm(columns2keep.all, columns2keep.phy, sequ, stat_names, phys_oce)
-### this part was taken from the universal header! (END) ----
-
 ## DM --------------------------------------------------------
 # variance-stabilizing transformation:
 
@@ -116,8 +114,8 @@ f.clr.all <- CoDaSeq::codaSeq.clr(f.n0.all, samples.by.row = T)
 f.clr.phy <- CoDaSeq::codaSeq.clr(f.n0.phy, samples.by.row = T)
 
 # DM (Thilo's method)
-data.all <- similarity(as.matrix(f.n0.all))
-data.phy <- similarity(as.matrix(f.n0.phy))
+data.all <- similarity(as.matrix(f.clr.all))
+data.phy <- similarity(as.matrix(f.clr.phy))
 
 data.all <- simil_reducer(data.all)
 data.phy <- simil_reducer(data.phy)
@@ -131,6 +129,41 @@ lap_mat.phy <- lap.phy$LaplacianMatrix
 
 elm.all <- eigen(lap_mat.all)
 elm.phy <- eigen(lap_mat.phy)
+
+# construct data.frames from eigenvectors with lowest values from each elm result:
+
+low.all <- data.frame("minus_1" = elm.all$vectors[,ncol(data.all)-1], "minus_2" = elm.all$vectors[,ncol(data.all)-2],
+                      "minus_3" = elm.all$vectors[,ncol(data.all)-3], "minus_4" = elm.all$vectors[,ncol(data.all)-4],
+                      "minus_5" = elm.all$vectors[,ncol(data.all)-5], "minus_6" = elm.all$vectors[,ncol(data.all)-6],
+                      "minus_7" = elm.all$vectors[,ncol(data.all)-7], "minus_8" = elm.all$vectors[,ncol(data.all)-8],
+                      year = as.factor(stat_names.all$year),
+                      depth = -as.numeric(stat_names.all$depth),
+                      count = 1:ncol(data.all))
+low.phy <- data.frame("minus_1" = elm.phy$vectors[,ncol(data.phy)-1], "minus_2" = elm.phy$vectors[,ncol(data.phy)-2],
+                      "minus_3" = elm.phy$vectors[,ncol(data.phy)-3], "minus_4" = elm.phy$vectors[,ncol(data.phy)-4],
+                      "minus_5" = elm.phy$vectors[,ncol(data.phy)-5], "minus_6" = elm.phy$vectors[,ncol(data.phy)-6],
+                      "minus_7" = elm.phy$vectors[,ncol(data.phy)-7], "minus_8" = elm.phy$vectors[,ncol(data.phy)-8],
+                      year = as.factor(stat_names.phy$year),
+                      depth = -as.numeric(stat_names.phy$depth),
+                      count = 1:ncol(data.phy))
+
+ggplot(low.all, aes(x = minus_1 , y = minus_2, col = depth))+
+  geom_point()+
+  labs(title = "physical+nutrient subset",
+       subtitle = "seems to pick up time signal!")
+
+ggplot(low.phy, aes(x = minus_1 , y = minus_2, col = depth))+
+  geom_point()+
+  labs(title = "physical subset",
+       subtitle = "seems to pick up time signal!")
+
+
+
+ggplot(low.all, aes(x = minus_2 , y = minus_3, col =depth))+
+  geom_point()+
+  labs(subtitle = "seems to pick up time signal!")
+
+
 
 ## map plot --------------------------------------------------
 library(rgdal)                                                                                                      
