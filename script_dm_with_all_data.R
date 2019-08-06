@@ -126,6 +126,14 @@ stat_names.HG <- stat_names[columns2keep.HG,]
 ### this part was taken from the universal header! (END) ----
 # remove unwanted filters, original datasets 
 rm(columns2keep.all, columns2keep.phy, columns2keep.2014, columns2keep.HG, sequ, stat_names, phys_oce)
+## triggers:
+
+# calculate correlations?
+calc.correl <- FALSE
+# plot worldmap?
+plot.wm <- FALSE
+
+
 ## DM --------------------------------------------------------
 
 # physical data oder nutrients+physical data dazu
@@ -208,45 +216,46 @@ low.HG <- data.frame("minus_1" = elm.HG$vectors[,ncol(data.HG)-1], "minus_2" = e
 #' each eigenvector is correlated with each column in the original dataset to find correlations
 #' between the eigenvectors and the predictors, determining what feature the eigenvector picks up
 
-## correlations 2014:
-cor.coef.2014 <- data.frame("eig.vec.ind" = sort(rep((length(elm.2014$values)-1):1, 10), decreasing = T),
-                           "order.ev" = rep(1:10, length(elm.2014$values)-1), "p-value" = NA,
-                           "best.predictor" = NA, "cor.coeff" = NA)
-coeffic <- NA
-pval <- NA
-for(i in (length(elm.2014$values)-1):1){
-  for(j in 1:dim(f.clr.2014)[2]){
-    coeffic[j] <- cor.test(elm.2014$vectors[, i], f.clr.2014[,j])[[4]]
-    pval[j] <- cor.test(elm.2014$vectors[, i], f.clr.2014[,j])[[3]]
+if (calc.correl){
+  ## correlations 2014:
+  cor.coef.2014 <- data.frame("eig.vec.ind" = sort(rep((length(elm.2014$values)-1):1, 10), decreasing = T),
+                             "order.ev" = rep(1:10, length(elm.2014$values)-1), "p-value" = NA,
+                             "best.predictor" = NA, "cor.coeff" = NA)
+  coeffic <- NA
+  pval <- NA
+  for(i in (length(elm.2014$values)-1):1){
+    for(j in 1:dim(f.clr.2014)[2]){
+      coeffic[j] <- cor.test(elm.2014$vectors[, i], f.clr.2014[,j])[[4]]
+      pval[j] <- cor.test(elm.2014$vectors[, i], f.clr.2014[,j])[[3]]
+    }
+    logi <- order(abs(coeffic), decreasing = T)[1:10]
+    cor.coef.2014$best.predictor[cor.coef.2014$eig.vec.ind == i] <- paste("Var. ", colnames(f.clr.2014)[logi])
+    cor.coef.2014$cor.coeff[cor.coef.2014$eig.vec.ind == i] <- coeffic[logi]
+    cor.coef.2014$p.value[cor.coef.2014$eig.vec.ind == i] <- pval[logi]
   }
-  logi <- order(abs(coeffic), decreasing = T)[1:10]
-  cor.coef.2014$best.predictor[cor.coef.2014$eig.vec.ind == i] <- paste("Var. ", colnames(f.clr.2014)[logi])
-  cor.coef.2014$cor.coeff[cor.coef.2014$eig.vec.ind == i] <- coeffic[logi]
-  cor.coef.2014$p.value[cor.coef.2014$eig.vec.ind == i] <- pval[logi]
-}
-
-## correlations HAUSGARTEN:
-cor.coef.HG <- data.frame("eig.vec.ind" = sort(rep((length(elm.HG$values)-1):1, 10), decreasing = T),
-                            "order.ev" = rep(1:10, length(elm.HG$values)-1), "p-value" = NA,
-                            "best.predictor" = NA, "cor.coeff" = NA)
-coeffic <- NA
-pval <- NA
-for(i in (length(elm.HG$values)-1):1){
-  for(j in 1:dim(f.clr.HG)[2]){
-    coeffic[j] <- cor.test(elm.HG$vectors[, i], f.clr.HG[,j])[[4]]
-    pval[j] <- cor.test(elm.HG$vectors[, i], f.clr.HG[,j])[[3]]
+  
+  ## correlations HAUSGARTEN:
+  cor.coef.HG <- data.frame("eig.vec.ind" = sort(rep((length(elm.HG$values)-1):1, 10), decreasing = T),
+                              "order.ev" = rep(1:10, length(elm.HG$values)-1), "p-value" = NA,
+                              "best.predictor" = NA, "cor.coeff" = NA)
+  coeffic <- NA
+  pval <- NA
+  for(i in (length(elm.HG$values)-1):1){
+    for(j in 1:dim(f.clr.HG)[2]){
+      coeffic[j] <- cor.test(elm.HG$vectors[, i], f.clr.HG[,j])[[4]]
+      pval[j] <- cor.test(elm.HG$vectors[, i], f.clr.HG[,j])[[3]]
+    }
+    logi <- order(abs(coeffic), decreasing = T)[1:10]
+    cor.coef.HG$best.predictor[cor.coef.HG$eig.vec.ind == i] <- paste("Var. ", colnames(f.clr.HG)[logi])
+    cor.coef.HG$cor.coeff[cor.coef.HG$eig.vec.ind == i] <- coeffic[logi]
+    cor.coef.HG$p.value[cor.coef.HG$eig.vec.ind == i] <- pval[logi]
   }
-  logi <- order(abs(coeffic), decreasing = T)[1:10]
-  cor.coef.HG$best.predictor[cor.coef.HG$eig.vec.ind == i] <- paste("Var. ", colnames(f.clr.HG)[logi])
-  cor.coef.HG$cor.coeff[cor.coef.HG$eig.vec.ind == i] <- coeffic[logi]
-  cor.coef.HG$p.value[cor.coef.HG$eig.vec.ind == i] <- pval[logi]
+  
+  
+  cor.coef.HG[cor.coef.HG$order.ev == 1,]
 }
-
-
-
-cor.coef.HG[cor.coef.HG$order.ev == 1,]
-
 #### plots ---------
+
 ggplot(low.all, aes(y = minus_1 , x = phys_oce.sub.all$NO3_mumol_l+phys_oce.sub.all$NO2_mumol_l))+
   geom_point()+
   labs(title = "physical+nutrient subset")
@@ -273,12 +282,19 @@ ggplot(low.all, aes(x = minus_2 , y = minus_3, col =depth))+
   geom_point()+
   labs(subtitle = "seems to pick up time signal!")
 
-
-
 ## map plot --------------------------------------------------
-library(rgdal)                                                                                                      
-library(raster)
-library(rworldxtra)
-library(rgeos)
-
-1
+if (plot.wm){
+  library(rgdal)                                                                                                      
+  library(raster)
+  library(rworldxtra)
+  library(rgeos)
+  
+  stat_coord.all <- stat_names.all[,c("latitude","longitude")] # select longitude and latitude columns
+  #stat_coord <- na.omit(stat_coord.all) # remove missing values
+  coordinates(stat_coord.all) <- ~longitude+latitude # spatial coordinate information 
+  # get world map
+  wm <- rworldmap::getMap(resolution ="high")
+  wm <- crop(wm, extent(-20, 20, 76, 81)) # adjust extent of map to sampling region# simple plot
+  plot(wm, axes=T) 
+  points(coordinates(stat_coord.all))
+}
