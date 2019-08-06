@@ -143,16 +143,16 @@ f.n0.2014 <- cbind(sequ.sub.2014, phys_oce.sub.2014)
 f.n0.HG <- cbind(sequ.sub.HG, phys_oce.sub.HG)
 
 # remove zeros
-f.n0.all <- zCompositions::cmultRepl(f.n0.all, method="CZM", label = 0)
-f.n0.phy <- zCompositions::cmultRepl(f.n0.phy, method="CZM", label = 0)
-f.n0.2014 <- zCompositions::cmultRepl(f.n0.2014, method="CZM", label = 0)
-f.n0.HG <- zCompositions::cmultRepl(f.n0.HG, method="CZM", label = 0)
+f.n0.input.all <- zCompositions::cmultRepl(f.n0.all, method="CZM", label = 0)
+f.n0.input.phy <- zCompositions::cmultRepl(f.n0.phy, method="CZM", label = 0)
+f.n0.input.2014 <- zCompositions::cmultRepl(f.n0.2014, method="CZM", label = 0)
+f.n0.input.HG <- zCompositions::cmultRepl(f.n0.HG, method="CZM", label = 0)
 
 # variance-stabilizing transformation:
-f.clr.all <- CoDaSeq::codaSeq.clr(f.n0.all, samples.by.row = T)
-f.clr.phy <- CoDaSeq::codaSeq.clr(f.n0.phy, samples.by.row = T)
-f.clr.2014 <- CoDaSeq::codaSeq.clr(f.n0.2014, samples.by.row = T)
-f.clr.HG <- CoDaSeq::codaSeq.clr(f.n0.HG, samples.by.row = T)
+f.clr.all <- CoDaSeq::codaSeq.clr(f.n0.input.all, samples.by.row = T)
+f.clr.phy <- CoDaSeq::codaSeq.clr(f.n0.input.phy, samples.by.row = T)
+f.clr.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.2014, samples.by.row = T)
+f.clr.HG <- CoDaSeq::codaSeq.clr(f.n0.input.HG, samples.by.row = T)
 
 # DM (Thilo's method)
 data.all <- similarity(as.matrix(f.clr.all))
