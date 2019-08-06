@@ -4,6 +4,19 @@
 rm(list = ls())
 graphics.off()
 
+## packages
+library(readxl)
+library(zCompositions) #' to remove non-zero entries from the raw data matrix
+library(BiocParallel)
+library(curl)
+library(CoDaSeq) #' installed from tarball from ggloor's github repo on CoDaSeq
+library(robCompositions) #' to calculate the Aitchison distance matrix
+library(ggbiplot)
+library(matrixLaplacian)
+library(destiny)
+library(rgl)
+library(ggplot2)
+
 ## functions
 similarity <- function(input_data){
   if(!is.matrix(input_data)) stop('input_data must be a matrix')
@@ -70,9 +83,16 @@ phys_oce.sub.all <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity
 phys_oce.sub.phy <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit"))
 
 # cases need to be complete.cases AND the duplicates need to be excluded:
-columns2keep.all <- complete.cases(phys_oce.sub.all) & phys_oce$keep == 1   
-columns2keep.phy <- complete.cases(phys_oce.sub.phy) & phys_oce$keep == 1
+columns2keep.all <- complete.cases(phys_oce.sub.all) & phys_oce$keep == 1  
+columns2keep.phy <- complete.cases(phys_oce.sub.phy) & phys_oce$keep == 1 
+columns2keep.2014 <- columns2keep.all & phys_oce$year == 2014
+columns2keep.HG <- columns2keep.all & phys_oce$latitude >= 78.5 & phys_oce$latitude <=80 & phys_oce$longitude >= -5 & phys_oce$longitude <= 11
+# borders of HG after: https://www.awi.de/en/science/biosciences/deep-sea-ecology-and-technology/observatories/lter-observatory-hausgarten.html
+
 # reduce
+#' one change of order here as phys_oce.sub.all is overwritten in the third row
+phys_oce.sub.2014 <- phys_oce.sub.all[columns2keep.2014,]
+phys_oce.sub.HG <- phys_oce.sub.all[columns2keep.HG,]
 phys_oce.sub.all <- phys_oce.sub.all[columns2keep.all,]
 phys_oce.sub.phy <- phys_oce.sub.phy[columns2keep.phy,]
 
@@ -83,18 +103,24 @@ sequ <- readRDS("sequ_all.rds")
 sequ <- t(sequ)
 sequ <- threshapply(sequ, "0.05 percent")
 
+# check dimensions
 dim(sequ)
 
+# subset sequences file:
 sequ.sub.all <- sequ[columns2keep.all,]
 sequ.sub.phy <- sequ[columns2keep.phy,]
+sequ.sub.2014 <- sequ[columns2keep.2014,]
+sequ.sub.HG <- sequ[columns2keep.HG,]
 
 # get station names from the phys_oce datasheet:
 stat_names <- subset(phys_oce, select = c("Proben_ID_intern", "date", "depth",
                                           "year", "latitude", "longitude"))
-# reduce
+# subset stat_names
 stat_names.all <- stat_names[columns2keep.all,]
 stat_names.phy <- stat_names[columns2keep.phy,]
+stat_names.2014 <- stat_names[columns2keep.2014,]
+stat_names.HG <- stat_names[columns2keep.HG,]
 
 # remove unwanted filters, original datasets 
-rm(columns2keep.all, columns2keep.phy, sequ, stat_names, phys_oce)
+rm(columns2keep.all, columns2keep.phy, columns2keep.2014, columns2keep.HG, sequ, stat_names, phys_oce)
 ### this part was taken from the universal header! (END) ~~~~~~~~~~~~~~~~~~~~~~~~~~
