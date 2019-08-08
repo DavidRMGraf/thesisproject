@@ -87,7 +87,7 @@ phys_oce.sub.2014 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinit
                                                 "NO3_mumol_l", "NO2_mumol_l", "SiOH4_mumol_l", "PO4_mumol_l"))
 phys_oce.sub.long <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit",
                                                  "NO3_mumol_l", "NO2_mumol_l", "SiOH4_mumol_l", "PO4_mumol_l",  "icecover"))
-phys_oce.sub.2016 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit", "icecover"))
+phys_oce.sub.2016 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit"))
 
 # cases need to be complete.cases AND the duplicates need to be excluded:
 # only values from 2014 in the whole Fram Strait:
