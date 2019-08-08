@@ -87,7 +87,7 @@ phys_oce.sub.2014 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinit
                                                 "NO3_mumol_l", "NO2_mumol_l", "SiOH4_mumol_l", "PO4_mumol_l"))
 phys_oce.sub.long <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit",
                                                  "NO3_mumol_l", "NO2_mumol_l", "SiOH4_mumol_l", "PO4_mumol_l",  "icecover"))
-phys_oce.sub.2016 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit"))
+phys_oce.sub.2016 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit", "icecover"))
 
 # cases need to be complete.cases AND the duplicates need to be excluded:
 # only values from 2014 in the whole Fram Strait:
@@ -113,12 +113,11 @@ phys_oce.sub.2016 <- phys_oce.sub.2016[columns2keep.2016,]
 sequ <- readRDS("sequ_all.rds")
 sequ <- t(sequ)
 # apply 0.05 percent threshold
-sequ <- threshapply(sequ, "0.05 percent")
 dim(sequ)
 
-sequ.sub.2014 <- sequ[columns2keep.2014,]
-sequ.sub.long <- sequ[columns2keep.long,]
-sequ.sub.2016 <- sequ[columns2keep.2016,]
+sequ.sub.2014 <- threshapply(sequ[columns2keep.2014,], "0.05 percent")
+sequ.sub.long <- threshapply(sequ[columns2keep.long,], "0.05 percent")
+sequ.sub.2016 <- threshapply(sequ[columns2keep.2016,], "0.05 percent")
 # sequ.sub.all <- sequ[columns2keep.all,]
 # sequ.sub.phy <- sequ[columns2keep.phy,]
 # sequ.sub.HG <- sequ[columns2keep.HG,]
