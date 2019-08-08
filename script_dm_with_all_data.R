@@ -147,7 +147,7 @@ calc.correl <- FALSE
 # plot worldmap?
 plot.wm <- FALSE
 
-## DM --------------------------------------------------------
+## Transformation -------------------------------------------
 
 # physical data oder nutrients+physical data dazu
 f.n0.2014 <- cbind(sequ.sub.2014, phys_oce.sub.2014)
@@ -159,10 +159,11 @@ f.n0.2016 <- cbind(sequ.sub.2016, phys_oce.sub.2016)
 f.n0.input.2014 <- zCompositions::cmultRepl(f.n0.2014, method="CZM", label = 0)
 f.n0.input.long <- zCompositions::cmultRepl(f.n0.long, method="CZM", label = 0)
 f.n0.input.2016 <- zCompositions::cmultRepl(f.n0.2016, method="CZM", label = 0)
-#' for 2016, it produces a non-fatal warning that has no consequences for the output
-#' cause unkown.
-
 #f.n0.input.dummy <- zCompositions::cmultRepl(f.n0.dummy, method="CZM", label = 0)
+
+f.n0.input.sequ.only.2014 <- zCompositions::cmultRepl(sequ.sub.2014, method="CZM", label = 0)
+f.n0.input.sequ.only.long <- zCompositions::cmultRepl(sequ.sub.long, method="CZM", label = 0)
+f.n0.input.sequ.only.2016 <- zCompositions::cmultRepl(sequ.sub.2016, method="CZM", label = 0)
 
 # variance-stabilizing transformation:
 f.clr.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.2014, samples.by.row = T)
@@ -170,7 +171,52 @@ f.clr.long <- CoDaSeq::codaSeq.clr(f.n0.input.long, samples.by.row = T)
 f.clr.2016 <- CoDaSeq::codaSeq.clr(f.n0.input.2016, samples.by.row = T)
 #f.clr.dummy <- CoDaSeq::codaSeq.clr(f.n0.input.dummy, samples.by.row = T)
 
-# DM (Thilo's method)
+f.clr.sequ.only.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.sequ.only.2014, samples.by.row = T)
+f.clr.sequ.only.long <- CoDaSeq::codaSeq.clr(f.n0.input.sequ.only.long, samples.by.row = T)
+f.clr.sequ.only.2016 <- CoDaSeq::codaSeq.clr(f.n0.input.sequ.only.2016, samples.by.row = T)
+
+## PCA ------------------------------------------------------
+library(FactoMineR)
+library(factoextra)
+
+## PCA on complete datasets:
+pca.2014 <- PCA(f.clr.2014, scale.unit = FALSE, ncp = 5, graph = FALSE)
+pca.long <- PCA(f.clr.long, scale.unit = FALSE, ncp = 5, graph = FALSE)
+pca.2016 <- PCA(f.clr.2016, scale.unit = FALSE, ncp = 5, graph = FALSE)
+
+fviz_eig(pca.2014, addlabels = TRUE, ylim = c(0, 50))
+fviz_eig(pca.long, addlabels = TRUE, ylim = c(0, 50))
+fviz_eig(pca.2016, addlabels = TRUE, ylim = c(0, 50))
+
+fviz_pca_var(pca.2014, col.var = "black")
+fviz_pca_var(pca.long, col.var = "black")
+fviz_pca_var(pca.2016, col.var = "black")
+
+pca.2014$var$cos2
+pca.long$var$cos2
+pca.2016$var$cos2
+
+fviz_contrib(pca.2014, choice = "var", axes = 1, top = 10)
+fviz_contrib(pca.long, choice = "var", axes = 1, top = 10)
+fviz_contrib(pca.2016, choice = "var", axes = 1, top = 10)
+
+fviz_contrib(pca.2014, choice = "ind", axes = 1:5)
+fviz_contrib(pca.long, choice = "ind", axes = 1:5)
+fviz_contrib(pca.2016, choice = "ind", axes = 1:5)
+
+## PCA on sequences
+pca.sequ.2014 <- PCA(f.clr.sequ.only.2014, scale.unit = F, ncp = 5, graph = FALSE)
+pca.sequ.long <- PCA(f.clr.sequ.only.long, scale.unit = F, ncp = 5, graph = FALSE)
+pca.sequ.2016 <- PCA(f.clr.sequ.only.2016, scale.unit = F, ncp = 5, graph = FALSE)
+
+coords.2014 <- as.data.frame.matrix(get_pca_var(pca.sequ.2014)$coord)
+coords.long <- as.data.frame.matrix(get_pca_var(pca.sequ.long)$coord)
+coords.2016 <- as.data.frame.matrix(get_pca_var(pca.sequ.2016)$coord)
+
+ggplot(coords.2014, aes(x = Dim.1, y = Dim.2, col = stat_names.2014$depth))+
+  geom_point()
+
+## DM -------------------------------------------------------
 data.2014 <- similarity(as.matrix(f.clr.2014))
 data.long <- similarity(as.matrix(f.clr.long))
 data.2016 <- similarity(as.matrix(f.clr.2016))
