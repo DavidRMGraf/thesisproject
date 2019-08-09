@@ -209,12 +209,22 @@ pca.sequ.2014 <- PCA(f.clr.sequ.only.2014, scale.unit = F, ncp = 5, graph = FALS
 pca.sequ.long <- PCA(f.clr.sequ.only.long, scale.unit = F, ncp = 5, graph = FALSE)
 pca.sequ.2016 <- PCA(f.clr.sequ.only.2016, scale.unit = F, ncp = 5, graph = FALSE)
 
-coords.2014 <- as.data.frame.matrix(get_pca_var(pca.sequ.2014)$coord)
-coords.long <- as.data.frame.matrix(get_pca_var(pca.sequ.long)$coord)
-coords.2016 <- as.data.frame.matrix(get_pca_var(pca.sequ.2016)$coord)
+# get coordinates in the PCA for each station:
+coords.2014 <- as.data.frame.matrix(pca.sequ.2014$ind$coord)
+coords.long <- as.data.frame.matrix(pca.sequ.long$ind$coord)
+coords.2016 <- as.data.frame.matrix(pca.sequ.2016$ind$coord)
 
-ggplot(coords.2014, aes(x = Dim.1, y = Dim.2, col = stat_names.2014$depth))+
+ggplot(coords.2014, aes(x = -stat_names.2014$depth, y = Dim.2))+
   geom_point()
+
+ggplot(coords.long, aes(y = Dim.2, x = -stat_names.long$depth))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+ggplot(coords.2016, aes(y = Dim.1, x = -stat_names.2016$depth))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
 
 ## DM -------------------------------------------------------
 data.2014 <- similarity(as.matrix(f.clr.2014))
