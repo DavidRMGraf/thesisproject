@@ -124,7 +124,7 @@ sequ.sub.2016 <- threshapply(sequ[columns2keep.2016,], "0.05 percent")
 
 # get station names from the phys_oce datasheet:
 stat_names <- subset(phys_oce, select = c("Proben_ID_intern", "date", "depth",
-                                          "year", "latitude", "longitude"))
+                                          "year", "latitude", "longitude", "icecover"))
 
 # reduce
 stat_names.2014 <- stat_names[columns2keep.2014,]
@@ -143,7 +143,7 @@ rm(columns2keep.2014, columns2keep.2016, columns2keep.long,
 ## triggers:
 
 # calculate correlations?
-calc.correl <- FALSE
+calc.correl <- TRUE
 # plot worldmap?
 plot.wm <- FALSE
 
@@ -214,7 +214,7 @@ coords.2014 <- as.data.frame.matrix(pca.sequ.2014$ind$coord)
 coords.long <- as.data.frame.matrix(pca.sequ.long$ind$coord)
 coords.2016 <- as.data.frame.matrix(pca.sequ.2016$ind$coord)
 
-ggplot(coords.2014, aes(x = -stat_names.2014$depth, y = Dim.2))+
+ggplot(coords.2014, aes(x = stat_names.2014$longitude, y = Dim.1))+
   geom_point()
 
 ggplot(coords.long, aes(y = Dim.2, x = -stat_names.long$depth))+
@@ -358,13 +358,19 @@ if (calc.correl){
   #   cor.coef.dummy$p.value[cor.coef.dummy$eig.vec.ind == i] <- pval[logi]
   # }
   
-  cor.coef.HG[cor.coef.HG$order.ev == 1,]
+  cor.coef.2014[cor.coef.2014$order.ev == 1,]
 }
+
 #### plots ---------
 
-ggplot(low.all, aes(y = minus_1 , x = phys_oce.sub.all$NO3_mumol_l+phys_oce.sub.all$NO2_mumol_l))+
-  geom_point()+
-  labs(title = "physical+nutrient subset")
+ggplot(low.2016, aes(y = minus_1 , x = -stat_names.2016$depth))+
+  geom_point()
+
+ggplot(low.2014, aes(y = minus_2 , x = stat_names.2014$longitude))+
+  geom_point()
+
+ggplot(low.long, aes(y = minus_2 , x = stat_names.long$icecover))+
+  geom_point()
 
 ggplot(low.phy, aes(x = minus_1 , y = minus_2, col = depth))+
   geom_point()+
