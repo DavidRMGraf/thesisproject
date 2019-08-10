@@ -140,7 +140,7 @@ rm(columns2keep.2014, columns2keep.2016, columns2keep.long,
    sequ, stat_names, phys_oce,
    threshapply)
 
-## triggers:
+## triggers:--------------------------------------------------
 
 # calculate correlations?
 calc.correl <- TRUE
@@ -160,7 +160,6 @@ f.n0.input.2014 <- zCompositions::cmultRepl(f.n0.2014, method="CZM", label = 0)
 f.n0.input.long <- zCompositions::cmultRepl(f.n0.long, method="CZM", label = 0)
 f.n0.input.2016 <- zCompositions::cmultRepl(f.n0.2016, method="CZM", label = 0)
 #f.n0.input.dummy <- zCompositions::cmultRepl(f.n0.dummy, method="CZM", label = 0)
-
 f.n0.input.sequ.only.2014 <- zCompositions::cmultRepl(sequ.sub.2014, method="CZM", label = 0)
 f.n0.input.sequ.only.long <- zCompositions::cmultRepl(sequ.sub.long, method="CZM", label = 0)
 f.n0.input.sequ.only.2016 <- zCompositions::cmultRepl(sequ.sub.2016, method="CZM", label = 0)
@@ -170,7 +169,6 @@ f.clr.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.2014, samples.by.row = T)
 f.clr.long <- CoDaSeq::codaSeq.clr(f.n0.input.long, samples.by.row = T)
 f.clr.2016 <- CoDaSeq::codaSeq.clr(f.n0.input.2016, samples.by.row = T)
 #f.clr.dummy <- CoDaSeq::codaSeq.clr(f.n0.input.dummy, samples.by.row = T)
-
 f.clr.sequ.only.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.sequ.only.2014, samples.by.row = T)
 f.clr.sequ.only.long <- CoDaSeq::codaSeq.clr(f.n0.input.sequ.only.long, samples.by.row = T)
 f.clr.sequ.only.2016 <- CoDaSeq::codaSeq.clr(f.n0.input.sequ.only.2016, samples.by.row = T)
@@ -231,26 +229,41 @@ data.2014 <- similarity(as.matrix(f.clr.2014))
 data.long <- similarity(as.matrix(f.clr.long))
 data.2016 <- similarity(as.matrix(f.clr.2016))
 #data.dummy <- similarity(as.matrix(f.clr.dummy))
+data.sequ.2014 <- similarity(as.matrix(f.clr.sequ.only.2014))
+data.sequ.long <- similarity(as.matrix(f.clr.sequ.only.long))
+data.sequ.2016 <- similarity(as.matrix(f.clr.sequ.only.2016))
 
 data.2014 <- simil_reducer(data.2014)
 data.long <- simil_reducer(data.long)
 data.2016 <- simil_reducer(data.2016)
 #data.dummy <- simil_reducer(data.dummy)
+data.sequ.2014 <- simil_reducer(data.sequ.2014)
+data.sequ.long <- simil_reducer(data.sequ.long)
+data.sequ.2016 <- simil_reducer(data.sequ.2016)
 
-lap.2014 <- matrixLaplacian::matrixLaplacian(data.2014, plot2D = F, plot3D = F)
-lap.long <- matrixLaplacian::matrixLaplacian(data.long, plot2D = F, plot3D = F)
-lap.2016 <- matrixLaplacian::matrixLaplacian(data.2016, plot2D = F, plot3D = F)
-#lap.dummy <- matrixLaplacian::matrixLaplacian(data.dummy, plot2D = F, plot3D = F)
+lap.2014 <-  matrixLaplacian(data.2014, plot2D = F, plot3D = F)
+lap.long <-  matrixLaplacian(data.long, plot2D = F, plot3D = F)
+lap.2016 <-  matrixLaplacian(data.2016, plot2D = F, plot3D = F)
+#lap.dummy <-  matrixLaplacian(data.dummy, plot2D = F, plot3D = F)
+lap.sequ.2014 <-  matrixLaplacian(data.sequ.2014, plot2D = F, plot3D = F)
+lap.sequ.long <-  matrixLaplacian(data.sequ.long, plot2D = F, plot3D = F)
+lap.sequ.2016 <-  matrixLaplacian(data.sequ.2016, plot2D = F, plot3D = F)
 
 lap_mat.2014 <- lap.2014$LaplacianMatrix
 lap_mat.long <- lap.long$LaplacianMatrix
 lap_mat.2016 <- lap.2016$LaplacianMatrix
 #lap_mat.dummy <- lap.dummy$LaplacianMatrix
+lap_mat.sequ.2014 <- lap.sequ.2014$LaplacianMatrix
+lap_mat.sequ.long <- lap.sequ.long$LaplacianMatrix
+lap_mat.sequ.2016 <- lap.sequ.2016$LaplacianMatrix
 
 elm.2014 <- eigen(lap_mat.2014)
 elm.long <- eigen(lap_mat.long)
 elm.2016 <- eigen(lap_mat.2016)
 #elm.dummy <- eigen(lap_mat.dummy)
+elm.sequ.2014 <- eigen(lap_mat.sequ.2014)
+elm.sequ.long <- eigen(lap_mat.sequ.long)
+elm.sequ.2016 <- eigen(lap_mat.sequ.2016)
 
 # construct data.frames from eigenvectors with lowest values from each elm result:
 
@@ -282,7 +295,27 @@ low.2016 <- data.frame("minus_1" = elm.2016$vectors[,ncol(data.2016)-1], "minus_
 #                       year = as.factor(stat_names.dummy$year),
 #                       depth = -as.numeric(stat_names.dummy$depth),
 #                       count = 1:ncol(data.dummy))
-
+low.sequ.2014 <- data.frame("minus_1" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-1], "minus_2" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-2],
+                       "minus_3" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-3], "minus_4" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-4],
+                       "minus_5" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-5], "minus_6" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-6],
+                       "minus_7" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-7], "minus_8" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-8],
+                       year = as.factor(stat_names.2014$year),
+                       depth = -as.numeric(stat_names.2014$depth),
+                       count = 1:ncol(data.sequ.2014))
+low.sequ.long <- data.frame("minus_1" = elm.sequ.long$vectors[,ncol(data.sequ.long)-1], "minus_2" = elm.sequ.long$vectors[,ncol(data.sequ.long)-2],
+                       "minus_3" = elm.sequ.long$vectors[,ncol(data.sequ.long)-3], "minus_4" = elm.sequ.long$vectors[,ncol(data.sequ.long)-4],
+                       "minus_5" = elm.sequ.long$vectors[,ncol(data.sequ.long)-5], "minus_6" = elm.sequ.long$vectors[,ncol(data.sequ.long)-6],
+                       "minus_7" = elm.sequ.long$vectors[,ncol(data.sequ.long)-7], "minus_8" = elm.sequ.long$vectors[,ncol(data.sequ.long)-8],
+                       year = as.factor(stat_names.long$year),
+                       depth = -as.numeric(stat_names.long$depth),
+                       count = 1:ncol(data.sequ.long))
+low.sequ.2016 <- data.frame("minus_1" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-1], "minus_2" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-2],
+                       "minus_3" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-3], "minus_4" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-4],
+                       "minus_5" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-5], "minus_6" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-6],
+                       "minus_7" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-7], "minus_8" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-8],
+                       year = as.factor(stat_names.2016$year),
+                       depth = -as.numeric(stat_names.2016$depth),
+                       count = 1:ncol(data.sequ.2016))
 ## correlations -------
 #' leaving out the first (smallest non-zero eigenvalue) and the corresponding eigenvector,
 #' each eigenvector is correlated with each column in the original dataset to find correlations
@@ -297,12 +330,12 @@ if (calc.correl){
   coeffic <- NA
   pval <- NA
   for(i in (length(elm.2014$values)-1):1){
-    for(j in 1:dim(f.clr.2014)[2]){
-      coeffic[j] <- cor.test(elm.2014$vectors[, i], f.clr.2014[,j])[[4]]
-      pval[j] <- cor.test(elm.2014$vectors[, i], f.clr.2014[,j])[[3]]
+    for(j in 1:dim(f.n0.2014)[2]){
+      coeffic[j] <- cor.test(elm.2014$vectors[, i], f.n0.2014[,j])[[4]]
+      pval[j] <- cor.test(elm.2014$vectors[, i], f.n0.2014[,j])[[3]]
     }
     logi <- order(abs(coeffic), decreasing = T)[1:10]
-    cor.coef.2014$best.predictor[cor.coef.2014$eig.vec.ind == i] <- paste("Var. ", colnames(f.clr.2014)[logi])
+    cor.coef.2014$best.predictor[cor.coef.2014$eig.vec.ind == i] <- paste("Var. ", colnames(f.n0.2014)[logi])
     cor.coef.2014$cor.coeff[cor.coef.2014$eig.vec.ind == i] <- coeffic[logi]
     cor.coef.2014$p.value[cor.coef.2014$eig.vec.ind == i] <- pval[logi]
   }
@@ -314,12 +347,12 @@ if (calc.correl){
   coeffic <- NA
   pval <- NA
   for(i in (length(elm.long$values)-1):1){
-    for(j in 1:dim(f.clr.long)[2]){
-      coeffic[j] <- cor.test(elm.long$vectors[, i], f.clr.long[,j])[[4]]
-      pval[j] <- cor.test(elm.long$vectors[, i], f.clr.long[,j])[[3]]
+    for(j in 1:dim(f.n0.long)[2]){
+      coeffic[j] <- cor.test(elm.long$vectors[, i], f.n0.long[,j])[[4]]
+      pval[j] <- cor.test(elm.long$vectors[, i], f.n0.long[,j])[[3]]
     }
     logi <- order(abs(coeffic), decreasing = T)[1:10]
-    cor.coef.long$best.predictor[cor.coef.long$eig.vec.ind == i] <- paste("Var. ", colnames(f.clr.long)[logi])
+    cor.coef.long$best.predictor[cor.coef.long$eig.vec.ind == i] <- paste("Var. ", colnames(f.n0.long)[logi])
     cor.coef.long$cor.coeff[cor.coef.long$eig.vec.ind == i] <- coeffic[logi]
     cor.coef.long$p.value[cor.coef.long$eig.vec.ind == i] <- pval[logi]
   }
@@ -331,12 +364,12 @@ if (calc.correl){
   coeffic <- NA
   pval <- NA
   for(i in (length(elm.2016$values)-1):1){
-    for(j in 1:dim(f.clr.2016)[2]){
-      coeffic[j] <- cor.test(elm.2016$vectors[, i], f.clr.2016[,j])[[4]]
-      pval[j] <- cor.test(elm.2016$vectors[, i], f.clr.2016[,j])[[3]]
+    for(j in 1:dim(f.n0.2016)[2]){
+      coeffic[j] <- cor.test(elm.2016$vectors[, i], f.n0.2016[,j])[[4]]
+      pval[j] <- cor.test(elm.2016$vectors[, i], f.n0.2016[,j])[[3]]
     }
     logi <- order(abs(coeffic), decreasing = T)[1:10]
-    cor.coef.2016$best.predictor[cor.coef.2016$eig.vec.ind == i] <- paste("Var. ", colnames(f.clr.2016)[logi])
+    cor.coef.2016$best.predictor[cor.coef.2016$eig.vec.ind == i] <- paste("Var. ", colnames(f.n0.2016)[logi])
     cor.coef.2016$cor.coeff[cor.coef.2016$eig.vec.ind == i] <- coeffic[logi]
     cor.coef.2016$p.value[cor.coef.2016$eig.vec.ind == i] <- pval[logi]
   }
@@ -348,12 +381,12 @@ if (calc.correl){
   # coeffic <- NA
   # pval <- NA
   # for(i in (length(elm.dummy$values)-1):1){
-  #   for(j in 1:dim(f.clr.dummy)[2]){
-  #     coeffic[j] <- cor.test(elm.dummy$vectors[, i], f.clr.dummy[,j])[[4]]
-  #     pval[j] <- cor.test(elm.dummy$vectors[, i], f.clr.dummy[,j])[[3]]
+  #   for(j in 1:dim(f.n0.dummy)[2]){
+  #     coeffic[j] <- cor.test(elm.dummy$vectors[, i], f.n0.dummy[,j])[[4]]
+  #     pval[j] <- cor.test(elm.dummy$vectors[, i], f.n0.dummy[,j])[[3]]
   #   }
   #   logi <- order(abs(coeffic), decreasing = T)[1:10]
-  #   cor.coef.dummy$best.predictor[cor.coef.dummy$eig.vec.ind == i] <- paste("Var. ", colnames(f.clr.dummy)[logi])
+  #   cor.coef.dummy$best.predictor[cor.coef.dummy$eig.vec.ind == i] <- paste("Var. ", colnames(f.n0.dummy)[logi])
   #   cor.coef.dummy$cor.coeff[cor.coef.dummy$eig.vec.ind == i] <- coeffic[logi]
   #   cor.coef.dummy$p.value[cor.coef.dummy$eig.vec.ind == i] <- pval[logi]
   # }
@@ -361,7 +394,7 @@ if (calc.correl){
   cor.coef.2014[cor.coef.2014$order.ev == 1,]
 }
 
-#### plots ---------
+## plots ---------
 
 ggplot(low.2016, aes(y = minus_1 , x = -stat_names.2016$depth))+
   geom_point()
