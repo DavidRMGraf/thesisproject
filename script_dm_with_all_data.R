@@ -82,11 +82,14 @@ phys_oce <- readRDS("physical_oceanography_data_with_ice.rds")
 # add 2 to the temperature data to make it compatible:
 phys_oce$temp_deg_c <- phys_oce$temp_deg_c+2
 
+# sum up nitrogen species:
+phys_oce$nitrogen_species <- phys_oce$NO2_mumol_l + phys_oce$NO3_mumol_l
+
 #remove autocorrelated values from the physical oceanography dataset:
 phys_oce.sub.2014 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit",
-                                                "NO3_mumol_l", "NO2_mumol_l", "SiOH4_mumol_l", "PO4_mumol_l"))
+                                                "nitrogen_species", "SiOH4_mumol_l", "PO4_mumol_l"))
 phys_oce.sub.long <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit",
-                                                 "NO3_mumol_l", "NO2_mumol_l", "SiOH4_mumol_l", "PO4_mumol_l",  "icecover"))
+                                                 "nitrogen_species", "SiOH4_mumol_l", "PO4_mumol_l",  "icecover"))
 phys_oce.sub.2016 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit", "icecover"))
 
 # cases need to be complete.cases AND the duplicates need to be excluded:
@@ -149,29 +152,51 @@ plot.wm <- FALSE
 
 ## Transformation -------------------------------------------
 
-# physical data oder nutrients+physical data dazu
-f.n0.2014 <- cbind(sequ.sub.2014, phys_oce.sub.2014)
-f.n0.long <- cbind(sequ.sub.long, phys_oce.sub.long)
-f.n0.2016 <- cbind(sequ.sub.2016, phys_oce.sub.2016)
-#f.n0.dummy <- cbind(sequ.sub.dummy, phys_oce.sub.dummy)
+# # physical data oder nutrients+physical data dazu
+# f.n0.2014 <- cbind(sequ.sub.2014, phys_oce.sub.2014)
+# f.n0.long <- cbind(sequ.sub.long, phys_oce.sub.long)
+# f.n0.2016 <- cbind(sequ.sub.2016, phys_oce.sub.2016)
+# #f.n0.dummy <- cbind(sequ.sub.dummy, phys_oce.sub.dummy)
+# 
+# # remove zeros
+# f.n0.input.2014 <- zCompositions::cmultRepl(f.n0.2014, method="CZM", label = 0)
+# f.n0.input.long <- zCompositions::cmultRepl(f.n0.long, method="CZM", label = 0)
+# f.n0.input.2016 <- zCompositions::cmultRepl(f.n0.2016, method="CZM", label = 0)
+# #f.n0.input.dummy <- zCompositions::cmultRepl(f.n0.dummy, method="CZM", label = 0)
+# f.n0.input.sequ.only.2014 <- zCompositions::cmultRepl(sequ.sub.2014, method="CZM", label = 0)
+# f.n0.input.sequ.only.long <- zCompositions::cmultRepl(sequ.sub.long, method="CZM", label = 0)
+# f.n0.input.sequ.only.2016 <- zCompositions::cmultRepl(sequ.sub.2016, method="CZM", label = 0)
 
-# remove zeros
-f.n0.input.2014 <- zCompositions::cmultRepl(f.n0.2014, method="CZM", label = 0)
-f.n0.input.long <- zCompositions::cmultRepl(f.n0.long, method="CZM", label = 0)
-f.n0.input.2016 <- zCompositions::cmultRepl(f.n0.2016, method="CZM", label = 0)
-#f.n0.input.dummy <- zCompositions::cmultRepl(f.n0.dummy, method="CZM", label = 0)
-f.n0.input.sequ.only.2014 <- zCompositions::cmultRepl(sequ.sub.2014, method="CZM", label = 0)
-f.n0.input.sequ.only.long <- zCompositions::cmultRepl(sequ.sub.long, method="CZM", label = 0)
-f.n0.input.sequ.only.2016 <- zCompositions::cmultRepl(sequ.sub.2016, method="CZM", label = 0)
+#~~~ problem ~~~
+#' problem here:
+#' cmultRepl with method = "CZM" is intended to be used on left-censored count data,
+#' transforming it using multiplicative simple replacement
+#' That is all good and well for the OTU data, but does not work for the physical
+#' data! 
+#' option 1: cbind physical data one step later (after the cmultRepl)
+#' option 2: keep it the way it is, potentially risking wrongly transformed values
+#' 
+#' as the CoDaSeq.clr uses the geometric mean, it should not be too sensitive to 
+#' the different numeric ranges that the OTU table (0-1) and the physical data,
+#' ranging from 0 to ~150 at times has.
+#' option 1:
+
+f.n0.sequ.only.2014 <- zCompositions::cmultRepl(sequ.sub.2014, method="CZM", label = 0)
+f.n0.sequ.only.long <- zCompositions::cmultRepl(sequ.sub.long, method="CZM", label = 0)
+f.n0.sequ.only.2016 <- zCompositions::cmultRepl(sequ.sub.2016, method="CZM", label = 0)
+
+f.n0.input.2014 <- cbind(f.n0.sequ.only.2014, phys_oce.sub.2014)
+f.n0.input.long <- cbind(f.n0.sequ.only.long, phys_oce.sub.long)
+f.n0.input.2016 <- cbind(f.n0.sequ.only.2016, phys_oce.sub.2016)
 
 # variance-stabilizing transformation:
 f.clr.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.2014, samples.by.row = T)
 f.clr.long <- CoDaSeq::codaSeq.clr(f.n0.input.long, samples.by.row = T)
 f.clr.2016 <- CoDaSeq::codaSeq.clr(f.n0.input.2016, samples.by.row = T)
 #f.clr.dummy <- CoDaSeq::codaSeq.clr(f.n0.input.dummy, samples.by.row = T)
-f.clr.sequ.only.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.sequ.only.2014, samples.by.row = T)
-f.clr.sequ.only.long <- CoDaSeq::codaSeq.clr(f.n0.input.sequ.only.long, samples.by.row = T)
-f.clr.sequ.only.2016 <- CoDaSeq::codaSeq.clr(f.n0.input.sequ.only.2016, samples.by.row = T)
+f.clr.sequ.only.2014 <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.2014, samples.by.row = T)
+f.clr.sequ.only.long <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.long, samples.by.row = T)
+f.clr.sequ.only.2016 <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.2016, samples.by.row = T)
 
 ## PCA ------------------------------------------------------
 library(FactoMineR)
