@@ -85,6 +85,9 @@ phys_oce$temp_deg_c <- phys_oce$temp_deg_c+2
 # sum up nitrogen species:
 phys_oce$nitrogen_species <- phys_oce$NO2_mumol_l + phys_oce$NO3_mumol_l
 
+# add 1 to icecover:
+phys_oce$icecover <- phys_oce$icecover+0.1
+
 #remove autocorrelated values from the physical oceanography dataset:
 phys_oce.sub.2014 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit",
                                                 "nitrogen_species", "SiOH4_mumol_l", "PO4_mumol_l"))
@@ -427,7 +430,7 @@ ggplot(low.2016, aes(y = minus_1 , x = -stat_names.2016$depth))+
 ggplot(low.2014, aes(y = minus_2 , x = stat_names.2014$longitude))+
   geom_point()
 
-ggplot(low.long, aes(y = minus_2 , x = stat_names.long$icecover))+
+ggplot(low.long, aes(y = minus_2 , x = stat_names.long$year-2008))+
   geom_point()
 
 ggplot(low.phy, aes(x = minus_1 , y = minus_2, col = depth))+
