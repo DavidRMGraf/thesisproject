@@ -197,6 +197,7 @@ f.clr.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.2014, samples.by.row = T)
 f.clr.long <- CoDaSeq::codaSeq.clr(f.n0.input.long, samples.by.row = T)
 f.clr.2016 <- CoDaSeq::codaSeq.clr(f.n0.input.2016, samples.by.row = T)
 #f.clr.dummy <- CoDaSeq::codaSeq.clr(f.n0.input.dummy, samples.by.row = T)
+
 f.clr.sequ.only.2014 <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.2014, samples.by.row = T)
 f.clr.sequ.only.long <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.long, samples.by.row = T)
 f.clr.sequ.only.2016 <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.2016, samples.by.row = T)
