@@ -92,7 +92,7 @@ phys_oce$icecover <- phys_oce$icecover+0.1
 phys_oce.sub.2014 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit",
                                                 "nitrogen_species", "SiOH4_mumol_l", "PO4_mumol_l"))
 phys_oce.sub.long <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit",
-                                                 "nitrogen_species", "SiOH4_mumol_l", "PO4_mumol_l",  "icecover"))
+                                                 "nitrogen_species", "SiOH4_mumol_l", "PO4_mumol_l"))
 phys_oce.sub.2016 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit", "icecover"))
 
 # cases need to be complete.cases AND the duplicates need to be excluded:
@@ -149,10 +149,11 @@ rm(columns2keep.2014, columns2keep.2016, columns2keep.long,
 ## triggers:--------------------------------------------------
 
 # calculate correlations?
-calc.correl <- TRUE
+calc.correl <- FALSE
 # plot worldmap?
 plot.wm <- FALSE
-
+# plot the rest of the stuff?
+do.plots <- FALSE
 ## Transformation -------------------------------------------
 
 # # physical data oder nutrients+physical data dazu
@@ -206,52 +207,16 @@ f.clr.sequ.only.2016 <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.2016, samples.by.row
 library(FactoMineR)
 library(factoextra)
 
-## PCA on complete datasets:
-pca.2014 <- PCA(f.clr.2014, scale.unit = FALSE, ncp = 5, graph = FALSE)
-pca.long <- PCA(f.clr.long, scale.unit = FALSE, ncp = 5, graph = FALSE)
-pca.2016 <- PCA(f.clr.2016, scale.unit = FALSE, ncp = 5, graph = FALSE)
-
-fviz_eig(pca.2014, addlabels = TRUE, ylim = c(0, 50))
-fviz_eig(pca.long, addlabels = TRUE, ylim = c(0, 50))
-fviz_eig(pca.2016, addlabels = TRUE, ylim = c(0, 50))
-
-fviz_pca_var(pca.2014, col.var = "black")
-fviz_pca_var(pca.long, col.var = "black")
-fviz_pca_var(pca.2016, col.var = "black")
-
-pca.2014$var$cos2
-pca.long$var$cos2
-pca.2016$var$cos2
-
-fviz_contrib(pca.2014, choice = "var", axes = 1, top = 10)
-fviz_contrib(pca.long, choice = "var", axes = 1, top = 10)
-fviz_contrib(pca.2016, choice = "var", axes = 1, top = 10)
-
-fviz_contrib(pca.2014, choice = "ind", axes = 1:5)
-fviz_contrib(pca.long, choice = "ind", axes = 1:5)
-fviz_contrib(pca.2016, choice = "ind", axes = 1:5)
-
 ## PCA on sequences
 pca.sequ.2014 <- PCA(f.clr.sequ.only.2014, scale.unit = F, ncp = 5, graph = FALSE)
 pca.sequ.long <- PCA(f.clr.sequ.only.long, scale.unit = F, ncp = 5, graph = FALSE)
 pca.sequ.2016 <- PCA(f.clr.sequ.only.2016, scale.unit = F, ncp = 5, graph = FALSE)
 
+
 # get coordinates in the PCA for each station:
 coords.2014 <- as.data.frame.matrix(pca.sequ.2014$ind$coord)
 coords.long <- as.data.frame.matrix(pca.sequ.long$ind$coord)
 coords.2016 <- as.data.frame.matrix(pca.sequ.2016$ind$coord)
-
-ggplot(coords.2014, aes(x = stat_names.2014$longitude, y = Dim.1))+
-  geom_point()
-
-ggplot(coords.long, aes(y = Dim.2, x = -stat_names.long$depth))+
-  geom_point()+
-  geom_smooth(method = "lm")
-
-ggplot(coords.2016, aes(y = Dim.1, x = -stat_names.2016$depth))+
-  geom_point()+
-  geom_smooth(method = "lm")
-
 
 ## DM -------------------------------------------------------
 data.2014 <- similarity(as.matrix(f.clr.2014))
@@ -299,24 +264,15 @@ elm.sequ.2016 <- eigen(lap_mat.sequ.2016)
 low.2014 <- data.frame("minus_1" = elm.2014$vectors[,ncol(data.2014)-1], "minus_2" = elm.2014$vectors[,ncol(data.2014)-2],
                        "minus_3" = elm.2014$vectors[,ncol(data.2014)-3], "minus_4" = elm.2014$vectors[,ncol(data.2014)-4],
                        "minus_5" = elm.2014$vectors[,ncol(data.2014)-5], "minus_6" = elm.2014$vectors[,ncol(data.2014)-6],
-                       "minus_7" = elm.2014$vectors[,ncol(data.2014)-7], "minus_8" = elm.2014$vectors[,ncol(data.2014)-8],
-                       year = as.factor(stat_names.2014$year),
-                       depth = -as.numeric(stat_names.2014$depth),
-                       count = 1:ncol(data.2014))
+                       "minus_7" = elm.2014$vectors[,ncol(data.2014)-7], "minus_8" = elm.2014$vectors[,ncol(data.2014)-8])
 low.long <- data.frame("minus_1" = elm.long$vectors[,ncol(data.long)-1], "minus_2" = elm.long$vectors[,ncol(data.long)-2],
                       "minus_3" = elm.long$vectors[,ncol(data.long)-3], "minus_4" = elm.long$vectors[,ncol(data.long)-4],
                       "minus_5" = elm.long$vectors[,ncol(data.long)-5], "minus_6" = elm.long$vectors[,ncol(data.long)-6],
-                      "minus_7" = elm.long$vectors[,ncol(data.long)-7], "minus_8" = elm.long$vectors[,ncol(data.long)-8],
-                      year = as.factor(stat_names.long$year),
-                      depth = -as.numeric(stat_names.long$depth),
-                      count = 1:ncol(data.long))
+                      "minus_7" = elm.long$vectors[,ncol(data.long)-7], "minus_8" = elm.long$vectors[,ncol(data.long)-8])
 low.2016 <- data.frame("minus_1" = elm.2016$vectors[,ncol(data.2016)-1], "minus_2" = elm.2016$vectors[,ncol(data.2016)-2],
                       "minus_3" = elm.2016$vectors[,ncol(data.2016)-3], "minus_4" = elm.2016$vectors[,ncol(data.2016)-4],
                       "minus_5" = elm.2016$vectors[,ncol(data.2016)-5], "minus_6" = elm.2016$vectors[,ncol(data.2016)-6],
-                      "minus_7" = elm.2016$vectors[,ncol(data.2016)-7], "minus_8" = elm.2016$vectors[,ncol(data.2016)-8],
-                      year = as.factor(stat_names.2016$year),
-                      depth = -as.numeric(stat_names.2016$depth),
-                      count = 1:ncol(data.2016))
+                      "minus_7" = elm.2016$vectors[,ncol(data.2016)-7], "minus_8" = elm.2016$vectors[,ncol(data.2016)-8])
 # low.dummy <- data.frame("minus_1" = elm.dummy$vectors[,ncol(data.dummy)-1], "minus_2" = elm.dummy$vectors[,ncol(data.dummy)-2],
 #                       "minus_3" = elm.dummy$vectors[,ncol(data.dummy)-3], "minus_4" = elm.dummy$vectors[,ncol(data.dummy)-4],
 #                       "minus_5" = elm.dummy$vectors[,ncol(data.dummy)-5], "minus_6" = elm.dummy$vectors[,ncol(data.dummy)-6],
@@ -327,24 +283,15 @@ low.2016 <- data.frame("minus_1" = elm.2016$vectors[,ncol(data.2016)-1], "minus_
 low.sequ.2014 <- data.frame("minus_1" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-1], "minus_2" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-2],
                        "minus_3" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-3], "minus_4" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-4],
                        "minus_5" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-5], "minus_6" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-6],
-                       "minus_7" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-7], "minus_8" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-8],
-                       year = as.factor(stat_names.2014$year),
-                       depth = -as.numeric(stat_names.2014$depth),
-                       count = 1:ncol(data.sequ.2014))
+                       "minus_7" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-7], "minus_8" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-8])
 low.sequ.long <- data.frame("minus_1" = elm.sequ.long$vectors[,ncol(data.sequ.long)-1], "minus_2" = elm.sequ.long$vectors[,ncol(data.sequ.long)-2],
                        "minus_3" = elm.sequ.long$vectors[,ncol(data.sequ.long)-3], "minus_4" = elm.sequ.long$vectors[,ncol(data.sequ.long)-4],
                        "minus_5" = elm.sequ.long$vectors[,ncol(data.sequ.long)-5], "minus_6" = elm.sequ.long$vectors[,ncol(data.sequ.long)-6],
-                       "minus_7" = elm.sequ.long$vectors[,ncol(data.sequ.long)-7], "minus_8" = elm.sequ.long$vectors[,ncol(data.sequ.long)-8],
-                       year = as.factor(stat_names.long$year),
-                       depth = -as.numeric(stat_names.long$depth),
-                       count = 1:ncol(data.sequ.long))
+                       "minus_7" = elm.sequ.long$vectors[,ncol(data.sequ.long)-7], "minus_8" = elm.sequ.long$vectors[,ncol(data.sequ.long)-8])
 low.sequ.2016 <- data.frame("minus_1" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-1], "minus_2" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-2],
                        "minus_3" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-3], "minus_4" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-4],
                        "minus_5" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-5], "minus_6" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-6],
-                       "minus_7" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-7], "minus_8" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-8],
-                       year = as.factor(stat_names.2016$year),
-                       depth = -as.numeric(stat_names.2016$depth),
-                       count = 1:ncol(data.sequ.2016))
+                       "minus_7" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-7], "minus_8" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-8])
 ## correlations -------
 #' leaving out the first (smallest non-zero eigenvalue) and the corresponding eigenvector,
 #' each eigenvector is correlated with each column in the original dataset to find correlations
@@ -359,12 +306,12 @@ if (calc.correl){
   coeffic <- NA
   pval <- NA
   for(i in (length(elm.2014$values)-1):1){
-    for(j in 1:dim(f.n0.2014)[2]){
-      coeffic[j] <- cor.test(elm.2014$vectors[, i], f.n0.2014[,j])[[4]]
-      pval[j] <- cor.test(elm.2014$vectors[, i], f.n0.2014[,j])[[3]]
+    for(j in 1:dim(f.n0.input.2014)[2]){
+      coeffic[j] <- cor.test(elm.2014$vectors[, i], f.n0.input.2014[,j])[[4]]
+      pval[j] <- cor.test(elm.2014$vectors[, i], f.n0.input.2014[,j])[[3]]
     }
     logi <- order(abs(coeffic), decreasing = T)[1:10]
-    cor.coef.2014$best.predictor[cor.coef.2014$eig.vec.ind == i] <- paste("Var. ", colnames(f.n0.2014)[logi])
+    cor.coef.2014$best.predictor[cor.coef.2014$eig.vec.ind == i] <- paste("Var. ", colnames(f.n0.input.2014)[logi])
     cor.coef.2014$cor.coeff[cor.coef.2014$eig.vec.ind == i] <- coeffic[logi]
     cor.coef.2014$p.value[cor.coef.2014$eig.vec.ind == i] <- pval[logi]
   }
@@ -376,12 +323,12 @@ if (calc.correl){
   coeffic <- NA
   pval <- NA
   for(i in (length(elm.long$values)-1):1){
-    for(j in 1:dim(f.n0.long)[2]){
-      coeffic[j] <- cor.test(elm.long$vectors[, i], f.n0.long[,j])[[4]]
-      pval[j] <- cor.test(elm.long$vectors[, i], f.n0.long[,j])[[3]]
+    for(j in 1:dim(f.n0.input.long)[2]){
+      coeffic[j] <- cor.test(elm.long$vectors[, i], f.n0.input.long[,j])[[4]]
+      pval[j] <- cor.test(elm.long$vectors[, i], f.n0.input.long[,j])[[3]]
     }
     logi <- order(abs(coeffic), decreasing = T)[1:10]
-    cor.coef.long$best.predictor[cor.coef.long$eig.vec.ind == i] <- paste("Var. ", colnames(f.n0.long)[logi])
+    cor.coef.long$best.predictor[cor.coef.long$eig.vec.ind == i] <- paste("Var. ", colnames(f.n0.input.long)[logi])
     cor.coef.long$cor.coeff[cor.coef.long$eig.vec.ind == i] <- coeffic[logi]
     cor.coef.long$p.value[cor.coef.long$eig.vec.ind == i] <- pval[logi]
   }
@@ -393,12 +340,12 @@ if (calc.correl){
   coeffic <- NA
   pval <- NA
   for(i in (length(elm.2016$values)-1):1){
-    for(j in 1:dim(f.n0.2016)[2]){
-      coeffic[j] <- cor.test(elm.2016$vectors[, i], f.n0.2016[,j])[[4]]
-      pval[j] <- cor.test(elm.2016$vectors[, i], f.n0.2016[,j])[[3]]
+    for(j in 1:dim(f.n0.input.2016)[2]){
+      coeffic[j] <- cor.test(elm.2016$vectors[, i], f.n0.input.2016[,j])[[4]]
+      pval[j] <- cor.test(elm.2016$vectors[, i], f.n0.input.2016[,j])[[3]]
     }
     logi <- order(abs(coeffic), decreasing = T)[1:10]
-    cor.coef.2016$best.predictor[cor.coef.2016$eig.vec.ind == i] <- paste("Var. ", colnames(f.n0.2016)[logi])
+    cor.coef.2016$best.predictor[cor.coef.2016$eig.vec.ind == i] <- paste("Var. ", colnames(f.n0.input.2016)[logi])
     cor.coef.2016$cor.coeff[cor.coef.2016$eig.vec.ind == i] <- coeffic[logi]
     cor.coef.2016$p.value[cor.coef.2016$eig.vec.ind == i] <- pval[logi]
   }
@@ -424,38 +371,38 @@ if (calc.correl){
 }
 
 ## plots ---------
-
-ggplot(low.2016, aes(y = minus_1 , x = -stat_names.2016$depth))+
-  geom_point()
-
-ggplot(low.2014, aes(y = minus_2 , x = stat_names.2014$longitude))+
-  geom_point()
-
-ggplot(low.long, aes(y = minus_2 , x = stat_names.long$year-2008))+
-  geom_point()
-
-ggplot(low.phy, aes(x = minus_1 , y = minus_2, col = depth))+
-  geom_point()+
-  labs(title = "physical subset",
-       subtitle = "seems to pick up time signal!")
-
-ggplot(low.all, aes(x = stat_names.all$longitude , y = minus_1, col = minus_1))+
-  geom_point()+
-  geom_smooth(method="lm", se=F)
-
-ggplot(low.all, aes(y = stat_names.all$latitude , x = minus_1, col = minus_1))+
-  geom_point()+
-  geom_smooth(method="lm", se=F)
-
-
-ggplot(low.all, aes(x = depth, y = minus_2, col = depth))+
-  geom_point()
-
-
-ggplot(low.all, aes(x = minus_2 , y = minus_3, col =depth))+
-  geom_point()+
-  labs(subtitle = "seems to pick up time signal!")
-
+if(do.plots){
+  ggplot(low.2016, aes(y = minus_1 , x = -stat_names.2016$depth))+
+    geom_point()
+  
+  ggplot(low.2014, aes(y = minus_2 , x = stat_names.2014$longitude))+
+    geom_point()
+  
+  ggplot(low.long, aes(y = minus_2 , x = stat_names.long$year-2008))+
+    geom_point()
+  
+  ggplot(low.phy, aes(x = minus_1 , y = minus_2, col = depth))+
+    geom_point()+
+    labs(title = "physical subset",
+         subtitle = "seems to pick up time signal!")
+  
+  ggplot(low.all, aes(x = stat_names.all$longitude , y = minus_1, col = minus_1))+
+    geom_point()+
+    geom_smooth(method="lm", se=F)
+  
+  ggplot(low.all, aes(y = stat_names.all$latitude , x = minus_1, col = minus_1))+
+    geom_point()+
+    geom_smooth(method="lm", se=F)
+  
+  
+  ggplot(low.all, aes(x = depth, y = minus_2, col = depth))+
+    geom_point()
+  
+  
+  ggplot(low.all, aes(x = minus_2 , y = minus_3, col =depth))+
+    geom_point()+
+    labs(subtitle = "seems to pick up time signal!")
+}
 ## map plot --------------------------------------------------
 if (plot.wm){
   library(rgdal)                                                                                                      
