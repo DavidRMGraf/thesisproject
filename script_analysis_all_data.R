@@ -189,15 +189,15 @@ f.n0.sequ.only.2014 <- zCompositions::cmultRepl(sequ.sub.2014, method="CZM", lab
 f.n0.sequ.only.long <- zCompositions::cmultRepl(sequ.sub.long, method="CZM", label = 0)
 f.n0.sequ.only.2016 <- zCompositions::cmultRepl(sequ.sub.2016, method="CZM", label = 0)
 
-f.n0.input.2014 <- cbind(f.n0.sequ.only.2014, phys_oce.sub.2014)
-f.n0.input.long <- cbind(f.n0.sequ.only.long, phys_oce.sub.long)
-f.n0.input.2016 <- cbind(f.n0.sequ.only.2016, phys_oce.sub.2016)
-
-# variance-stabilizing transformation:
-f.clr.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.2014, samples.by.row = T)
-f.clr.long <- CoDaSeq::codaSeq.clr(f.n0.input.long, samples.by.row = T)
-f.clr.2016 <- CoDaSeq::codaSeq.clr(f.n0.input.2016, samples.by.row = T)
-#f.clr.dummy <- CoDaSeq::codaSeq.clr(f.n0.input.dummy, samples.by.row = T)
+# f.n0.input.2014 <- cbind(f.n0.sequ.only.2014, phys_oce.sub.2014)
+# f.n0.input.long <- cbind(f.n0.sequ.only.long, phys_oce.sub.long)
+# f.n0.input.2016 <- cbind(f.n0.sequ.only.2016, phys_oce.sub.2016)
+# 
+# # variance-stabilizing transformation:
+# f.clr.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.2014, samples.by.row = T)
+# f.clr.long <- CoDaSeq::codaSeq.clr(f.n0.input.long, samples.by.row = T)
+# f.clr.2016 <- CoDaSeq::codaSeq.clr(f.n0.input.2016, samples.by.row = T)
+# #f.clr.dummy <- CoDaSeq::codaSeq.clr(f.n0.input.dummy, samples.by.row = T)
 
 f.clr.sequ.only.2014 <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.2014, samples.by.row = T)
 f.clr.sequ.only.long <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.long, samples.by.row = T)
@@ -219,67 +219,67 @@ coords.long <- as.data.frame.matrix(pca.sequ.long$ind$coord)
 coords.2016 <- as.data.frame.matrix(pca.sequ.2016$ind$coord)
 
 ## DM -------------------------------------------------------
-data.2014 <- similarity(as.matrix(f.clr.2014))
-data.long <- similarity(as.matrix(f.clr.long))
-data.2016 <- similarity(as.matrix(f.clr.2016))
-#data.dummy <- similarity(as.matrix(f.clr.dummy))
+# data.2014 <- similarity(as.matrix(f.clr.2014))
+# data.long <- similarity(as.matrix(f.clr.long))
+# data.2016 <- similarity(as.matrix(f.clr.2016))
+# #data.dummy <- similarity(as.matrix(f.clr.dummy))
 data.sequ.2014 <- similarity(as.matrix(f.clr.sequ.only.2014))
 data.sequ.long <- similarity(as.matrix(f.clr.sequ.only.long))
 data.sequ.2016 <- similarity(as.matrix(f.clr.sequ.only.2016))
 
-data.2014 <- simil_reducer(data.2014)
-data.long <- simil_reducer(data.long)
-data.2016 <- simil_reducer(data.2016)
-#data.dummy <- simil_reducer(data.dummy)
+# data.2014 <- simil_reducer(data.2014)
+# data.long <- simil_reducer(data.long)
+# data.2016 <- simil_reducer(data.2016)
+# #data.dummy <- simil_reducer(data.dummy)
 data.sequ.2014 <- simil_reducer(data.sequ.2014)
 data.sequ.long <- simil_reducer(data.sequ.long)
 data.sequ.2016 <- simil_reducer(data.sequ.2016)
 
-lap.2014 <-  matrixLaplacian(data.2014, plot2D = F, plot3D = F)
-lap.long <-  matrixLaplacian(data.long, plot2D = F, plot3D = F)
-lap.2016 <-  matrixLaplacian(data.2016, plot2D = F, plot3D = F)
-#lap.dummy <-  matrixLaplacian(data.dummy, plot2D = F, plot3D = F)
+# lap.2014 <-  matrixLaplacian(data.2014, plot2D = F, plot3D = F)
+# lap.long <-  matrixLaplacian(data.long, plot2D = F, plot3D = F)
+# lap.2016 <-  matrixLaplacian(data.2016, plot2D = F, plot3D = F)
+# #lap.dummy <-  matrixLaplacian(data.dummy, plot2D = F, plot3D = F)
 lap.sequ.2014 <-  matrixLaplacian(data.sequ.2014, plot2D = F, plot3D = F)
 lap.sequ.long <-  matrixLaplacian(data.sequ.long, plot2D = F, plot3D = F)
 lap.sequ.2016 <-  matrixLaplacian(data.sequ.2016, plot2D = F, plot3D = F)
 
-lap_mat.2014 <- lap.2014$LaplacianMatrix
-lap_mat.long <- lap.long$LaplacianMatrix
-lap_mat.2016 <- lap.2016$LaplacianMatrix
-#lap_mat.dummy <- lap.dummy$LaplacianMatrix
+# lap_mat.2014 <- lap.2014$LaplacianMatrix
+# lap_mat.long <- lap.long$LaplacianMatrix
+# lap_mat.2016 <- lap.2016$LaplacianMatrix
+# #lap_mat.dummy <- lap.dummy$LaplacianMatrix
 lap_mat.sequ.2014 <- lap.sequ.2014$LaplacianMatrix
 lap_mat.sequ.long <- lap.sequ.long$LaplacianMatrix
 lap_mat.sequ.2016 <- lap.sequ.2016$LaplacianMatrix
 
-elm.2014 <- eigen(lap_mat.2014)
-elm.long <- eigen(lap_mat.long)
-elm.2016 <- eigen(lap_mat.2016)
-#elm.dummy <- eigen(lap_mat.dummy)
+# elm.2014 <- eigen(lap_mat.2014)
+# elm.long <- eigen(lap_mat.long)
+# elm.2016 <- eigen(lap_mat.2016)
+# #elm.dummy <- eigen(lap_mat.dummy)
 elm.sequ.2014 <- eigen(lap_mat.sequ.2014)
 elm.sequ.long <- eigen(lap_mat.sequ.long)
 elm.sequ.2016 <- eigen(lap_mat.sequ.2016)
 
 # construct data.frames from eigenvectors with lowest values from each elm result:
 
-low.2014 <- data.frame("minus_1" = elm.2014$vectors[,ncol(data.2014)-1], "minus_2" = elm.2014$vectors[,ncol(data.2014)-2],
-                       "minus_3" = elm.2014$vectors[,ncol(data.2014)-3], "minus_4" = elm.2014$vectors[,ncol(data.2014)-4],
-                       "minus_5" = elm.2014$vectors[,ncol(data.2014)-5], "minus_6" = elm.2014$vectors[,ncol(data.2014)-6],
-                       "minus_7" = elm.2014$vectors[,ncol(data.2014)-7], "minus_8" = elm.2014$vectors[,ncol(data.2014)-8])
-low.long <- data.frame("minus_1" = elm.long$vectors[,ncol(data.long)-1], "minus_2" = elm.long$vectors[,ncol(data.long)-2],
-                      "minus_3" = elm.long$vectors[,ncol(data.long)-3], "minus_4" = elm.long$vectors[,ncol(data.long)-4],
-                      "minus_5" = elm.long$vectors[,ncol(data.long)-5], "minus_6" = elm.long$vectors[,ncol(data.long)-6],
-                      "minus_7" = elm.long$vectors[,ncol(data.long)-7], "minus_8" = elm.long$vectors[,ncol(data.long)-8])
-low.2016 <- data.frame("minus_1" = elm.2016$vectors[,ncol(data.2016)-1], "minus_2" = elm.2016$vectors[,ncol(data.2016)-2],
-                      "minus_3" = elm.2016$vectors[,ncol(data.2016)-3], "minus_4" = elm.2016$vectors[,ncol(data.2016)-4],
-                      "minus_5" = elm.2016$vectors[,ncol(data.2016)-5], "minus_6" = elm.2016$vectors[,ncol(data.2016)-6],
-                      "minus_7" = elm.2016$vectors[,ncol(data.2016)-7], "minus_8" = elm.2016$vectors[,ncol(data.2016)-8])
-# low.dummy <- data.frame("minus_1" = elm.dummy$vectors[,ncol(data.dummy)-1], "minus_2" = elm.dummy$vectors[,ncol(data.dummy)-2],
-#                       "minus_3" = elm.dummy$vectors[,ncol(data.dummy)-3], "minus_4" = elm.dummy$vectors[,ncol(data.dummy)-4],
-#                       "minus_5" = elm.dummy$vectors[,ncol(data.dummy)-5], "minus_6" = elm.dummy$vectors[,ncol(data.dummy)-6],
-#                       "minus_7" = elm.dummy$vectors[,ncol(data.dummy)-7], "minus_8" = elm.dummy$vectors[,ncol(data.dummy)-8],
-#                       year = as.factor(stat_names.dummy$year),
-#                       depth = -as.numeric(stat_names.dummy$depth),
-#                       count = 1:ncol(data.dummy))
+# low.2014 <- data.frame("minus_1" = elm.2014$vectors[,ncol(data.2014)-1], "minus_2" = elm.2014$vectors[,ncol(data.2014)-2],
+#                        "minus_3" = elm.2014$vectors[,ncol(data.2014)-3], "minus_4" = elm.2014$vectors[,ncol(data.2014)-4],
+#                        "minus_5" = elm.2014$vectors[,ncol(data.2014)-5], "minus_6" = elm.2014$vectors[,ncol(data.2014)-6],
+#                        "minus_7" = elm.2014$vectors[,ncol(data.2014)-7], "minus_8" = elm.2014$vectors[,ncol(data.2014)-8])
+# low.long <- data.frame("minus_1" = elm.long$vectors[,ncol(data.long)-1], "minus_2" = elm.long$vectors[,ncol(data.long)-2],
+#                       "minus_3" = elm.long$vectors[,ncol(data.long)-3], "minus_4" = elm.long$vectors[,ncol(data.long)-4],
+#                       "minus_5" = elm.long$vectors[,ncol(data.long)-5], "minus_6" = elm.long$vectors[,ncol(data.long)-6],
+#                       "minus_7" = elm.long$vectors[,ncol(data.long)-7], "minus_8" = elm.long$vectors[,ncol(data.long)-8])
+# low.2016 <- data.frame("minus_1" = elm.2016$vectors[,ncol(data.2016)-1], "minus_2" = elm.2016$vectors[,ncol(data.2016)-2],
+#                       "minus_3" = elm.2016$vectors[,ncol(data.2016)-3], "minus_4" = elm.2016$vectors[,ncol(data.2016)-4],
+#                       "minus_5" = elm.2016$vectors[,ncol(data.2016)-5], "minus_6" = elm.2016$vectors[,ncol(data.2016)-6],
+#                       "minus_7" = elm.2016$vectors[,ncol(data.2016)-7], "minus_8" = elm.2016$vectors[,ncol(data.2016)-8])
+# # low.dummy <- data.frame("minus_1" = elm.dummy$vectors[,ncol(data.dummy)-1], "minus_2" = elm.dummy$vectors[,ncol(data.dummy)-2],
+# #                       "minus_3" = elm.dummy$vectors[,ncol(data.dummy)-3], "minus_4" = elm.dummy$vectors[,ncol(data.dummy)-4],
+# #                       "minus_5" = elm.dummy$vectors[,ncol(data.dummy)-5], "minus_6" = elm.dummy$vectors[,ncol(data.dummy)-6],
+# #                       "minus_7" = elm.dummy$vectors[,ncol(data.dummy)-7], "minus_8" = elm.dummy$vectors[,ncol(data.dummy)-8],
+# #                       year = as.factor(stat_names.dummy$year),
+# #                       depth = -as.numeric(stat_names.dummy$depth),
+# #                       count = 1:ncol(data.dummy))
 low.sequ.2014 <- data.frame("minus_1" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-1], "minus_2" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-2],
                        "minus_3" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-3], "minus_4" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-4],
                        "minus_5" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-5], "minus_6" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-6],
