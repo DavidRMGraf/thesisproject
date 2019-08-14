@@ -18,6 +18,8 @@ library(matrixLaplacian)
 library(destiny)
 library(rgl)
 library(ggplot2)
+library(FactoMineR)
+library(factoextra)
 
 ## functions
 similarity <- function(input_data){
@@ -79,14 +81,8 @@ threshapply <- function(input_data, method){
 # get physical oceanography data
 phys_oce <- readRDS("physical_oceanography_data_with_ice.rds")
 
-# add 2 to the temperature data to make it compatible:
-phys_oce$temp_deg_c <- phys_oce$temp_deg_c+2
-
 # sum up nitrogen species:
 phys_oce$nitrogen_species <- phys_oce$NO2_mumol_l + phys_oce$NO3_mumol_l
-
-# add 1 to icecover:
-phys_oce$icecover <- phys_oce$icecover+0.1
 
 #remove autocorrelated values from the physical oceanography dataset:
 phys_oce.sub.2014 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinity", "flurom_arbit",
@@ -97,23 +93,17 @@ phys_oce.sub.2016 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinit
 
 # cases need to be complete.cases AND the duplicates need to be excluded:
 # only values from 2014 in the whole Fram Strait:
-columns2keep.2014 <- complete.cases(phys_oce.sub.2014) & phys_oce$keep == 1 & phys_oce$year == 2014
+columns2keep.2014 <- complete.cases(phys_oce.sub.2014) & phys_oce$keep == 1 & phys_oce$year == 2014 &  phys_oce$depth <= 30 
 # all years except 2016, shallower than 30.1 m, in HAUSGARTEN:
 columns2keep.long <- complete.cases(phys_oce.sub.long) & phys_oce$keep == 1 & phys_oce$depth <= 30 & phys_oce$latitude >= 78.5 & phys_oce$latitude <=80 & phys_oce$longitude >= -5 & phys_oce$longitude <= 11
+# # borders of HG after: https://www.awi.de/en/science/biosciences/deep-sea-ecology-and-technology/observatories/lter-observatory-hausgarten.html
 # everything available from 2016:
 columns2keep.2016 <- complete.cases(phys_oce.sub.2016) & phys_oce$keep == 1 & phys_oce$year == 2016
-
-# columns2keep.HG <- columns2keep.all & phys_oce$latitude >= 78.5 & phys_oce$latitude <=80 & phys_oce$longitude >= -5 & phys_oce$longitude <= 11
-# # borders of HG after: https://www.awi.de/en/science/biosciences/deep-sea-ecology-and-technology/observatories/lter-observatory-hausgarten.html
 
 # reduce
 phys_oce.sub.2014 <- phys_oce.sub.2014[columns2keep.2014,]
 phys_oce.sub.long <- phys_oce.sub.long[columns2keep.long,]
 phys_oce.sub.2016 <- phys_oce.sub.2016[columns2keep.2016,]
-
-# phys_oce.sub.HG <- phys_oce.sub.all[columns2keep.HG,]
-# phys_oce.sub.all <- phys_oce.sub.all[columns2keep.all,]
-# phys_oce.sub.phy <- phys_oce.sub.phy[columns2keep.phy,]
 
 # get sequences
 sequ <- readRDS("sequ_all.rds")
@@ -152,146 +142,62 @@ rm(columns2keep.2014, columns2keep.2016, columns2keep.long,
 calc.correl <- FALSE
 # plot worldmap?
 plot.wm <- FALSE
-# plot the rest of the stuff?
-do.plots <- FALSE
+
 ## Transformation -------------------------------------------
+# remove zeros in sequence subset:
+f.n0.2014 <- zCompositions::cmultRepl(sequ.sub.2014, method="CZM", label = 0)
+f.n0.long <- zCompositions::cmultRepl(sequ.sub.long, method="CZM", label = 0)
+f.n0.2016 <- zCompositions::cmultRepl(sequ.sub.2016, method="CZM", label = 0)
 
-# # physical data oder nutrients+physical data dazu
-# f.n0.2014 <- cbind(sequ.sub.2014, phys_oce.sub.2014)
-# f.n0.long <- cbind(sequ.sub.long, phys_oce.sub.long)
-# f.n0.2016 <- cbind(sequ.sub.2016, phys_oce.sub.2016)
-# #f.n0.dummy <- cbind(sequ.sub.dummy, phys_oce.sub.dummy)
-# 
-# # remove zeros
-# f.n0.input.2014 <- zCompositions::cmultRepl(f.n0.2014, method="CZM", label = 0)
-# f.n0.input.long <- zCompositions::cmultRepl(f.n0.long, method="CZM", label = 0)
-# f.n0.input.2016 <- zCompositions::cmultRepl(f.n0.2016, method="CZM", label = 0)
-# #f.n0.input.dummy <- zCompositions::cmultRepl(f.n0.dummy, method="CZM", label = 0)
-# f.n0.input.sequ.only.2014 <- zCompositions::cmultRepl(sequ.sub.2014, method="CZM", label = 0)
-# f.n0.input.sequ.only.long <- zCompositions::cmultRepl(sequ.sub.long, method="CZM", label = 0)
-# f.n0.input.sequ.only.2016 <- zCompositions::cmultRepl(sequ.sub.2016, method="CZM", label = 0)
-
-#~~~ problem ~~~
-#' problem here:
-#' cmultRepl with method = "CZM" is intended to be used on left-censored count data,
-#' transforming it using multiplicative simple replacement
-#' That is all good and well for the OTU data, but does not work for the physical
-#' data! 
-#' option 1: cbind physical data one step later (after the cmultRepl)
-#' option 2: keep it the way it is, potentially risking wrongly transformed values
-#' 
-#' as the CoDaSeq.clr uses the geometric mean, it should not be too sensitive to 
-#' the different numeric ranges that the OTU table (0-1) and the physical data,
-#' ranging from 0 to ~150 at times has.
-#' option 1:
-
-f.n0.sequ.only.2014 <- zCompositions::cmultRepl(sequ.sub.2014, method="CZM", label = 0)
-f.n0.sequ.only.long <- zCompositions::cmultRepl(sequ.sub.long, method="CZM", label = 0)
-f.n0.sequ.only.2016 <- zCompositions::cmultRepl(sequ.sub.2016, method="CZM", label = 0)
-
-# f.n0.input.2014 <- cbind(f.n0.sequ.only.2014, phys_oce.sub.2014)
-# f.n0.input.long <- cbind(f.n0.sequ.only.long, phys_oce.sub.long)
-# f.n0.input.2016 <- cbind(f.n0.sequ.only.2016, phys_oce.sub.2016)
-# 
-# # variance-stabilizing transformation:
-# f.clr.2014 <- CoDaSeq::codaSeq.clr(f.n0.input.2014, samples.by.row = T)
-# f.clr.long <- CoDaSeq::codaSeq.clr(f.n0.input.long, samples.by.row = T)
-# f.clr.2016 <- CoDaSeq::codaSeq.clr(f.n0.input.2016, samples.by.row = T)
-# #f.clr.dummy <- CoDaSeq::codaSeq.clr(f.n0.input.dummy, samples.by.row = T)
-
-f.clr.sequ.only.2014 <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.2014, samples.by.row = T)
-f.clr.sequ.only.long <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.long, samples.by.row = T)
-f.clr.sequ.only.2016 <- CoDaSeq::codaSeq.clr(f.n0.sequ.only.2016, samples.by.row = T)
+# variance-stabilizing transformation:
+f.clr.2014 <- CoDaSeq::codaSeq.clr(f.n0.2014, samples.by.row = T)
+f.clr.long <- CoDaSeq::codaSeq.clr(f.n0.long, samples.by.row = T)
+f.clr.2016 <- CoDaSeq::codaSeq.clr(f.n0.2016, samples.by.row = T)
 
 ## PCA ------------------------------------------------------
-library(FactoMineR)
-library(factoextra)
-
-## PCA on sequences
-pca.sequ.2014 <- PCA(f.clr.sequ.only.2014, scale.unit = F, ncp = 5, graph = FALSE)
-pca.sequ.long <- PCA(f.clr.sequ.only.long, scale.unit = F, ncp = 5, graph = FALSE)
-pca.sequ.2016 <- PCA(f.clr.sequ.only.2016, scale.unit = F, ncp = 5, graph = FALSE)
-
+pca.2014 <- PCA(f.clr.2014, scale.unit = F, ncp = 5, graph = FALSE)
+pca.long <- PCA(f.clr.long, scale.unit = F, ncp = 5, graph = FALSE)
+pca.2016 <- PCA(f.clr.2016, scale.unit = F, ncp = 5, graph = FALSE)
 
 # get coordinates in the PCA for each station:
-coords.2014 <- as.data.frame.matrix(pca.sequ.2014$ind$coord)
-coords.long <- as.data.frame.matrix(pca.sequ.long$ind$coord)
-coords.2016 <- as.data.frame.matrix(pca.sequ.2016$ind$coord)
+coords.2014 <- as.data.frame.matrix(pca.2014$ind$coord)
+coords.long <- as.data.frame.matrix(pca.long$ind$coord)
+coords.2016 <- as.data.frame.matrix(pca.2016$ind$coord)
 
 ## DM -------------------------------------------------------
-# data.2014 <- similarity(as.matrix(f.clr.2014))
-# data.long <- similarity(as.matrix(f.clr.long))
-# data.2016 <- similarity(as.matrix(f.clr.2016))
-# #data.dummy <- similarity(as.matrix(f.clr.dummy))
-data.sequ.2014 <- similarity(as.matrix(f.clr.sequ.only.2014))
-data.sequ.long <- similarity(as.matrix(f.clr.sequ.only.long))
-data.sequ.2016 <- similarity(as.matrix(f.clr.sequ.only.2016))
+data.2014 <- similarity(as.matrix(f.clr.2014))
+data.long <- similarity(as.matrix(f.clr.long))
+data.2016 <- similarity(as.matrix(f.clr.2016))
 
-# data.2014 <- simil_reducer(data.2014)
-# data.long <- simil_reducer(data.long)
-# data.2016 <- simil_reducer(data.2016)
-# #data.dummy <- simil_reducer(data.dummy)
-data.sequ.2014 <- simil_reducer(data.sequ.2014)
-data.sequ.long <- simil_reducer(data.sequ.long)
-data.sequ.2016 <- simil_reducer(data.sequ.2016)
+data.2014 <- simil_reducer(data.2014)
+data.long <- simil_reducer(data.long)
+data.2016 <- simil_reducer(data.2016)
 
-# lap.2014 <-  matrixLaplacian(data.2014, plot2D = F, plot3D = F)
-# lap.long <-  matrixLaplacian(data.long, plot2D = F, plot3D = F)
-# lap.2016 <-  matrixLaplacian(data.2016, plot2D = F, plot3D = F)
-# #lap.dummy <-  matrixLaplacian(data.dummy, plot2D = F, plot3D = F)
-lap.sequ.2014 <-  matrixLaplacian(data.sequ.2014, plot2D = F, plot3D = F)
-lap.sequ.long <-  matrixLaplacian(data.sequ.long, plot2D = F, plot3D = F)
-lap.sequ.2016 <-  matrixLaplacian(data.sequ.2016, plot2D = F, plot3D = F)
+lap.2014 <-  matrixLaplacian(data.2014, plot2D = F, plot3D = F)
+lap.long <-  matrixLaplacian(data.long, plot2D = F, plot3D = F)
+lap.2016 <-  matrixLaplacian(data.2016, plot2D = F, plot3D = F)
 
-# lap_mat.2014 <- lap.2014$LaplacianMatrix
-# lap_mat.long <- lap.long$LaplacianMatrix
-# lap_mat.2016 <- lap.2016$LaplacianMatrix
-# #lap_mat.dummy <- lap.dummy$LaplacianMatrix
-lap_mat.sequ.2014 <- lap.sequ.2014$LaplacianMatrix
-lap_mat.sequ.long <- lap.sequ.long$LaplacianMatrix
-lap_mat.sequ.2016 <- lap.sequ.2016$LaplacianMatrix
+lap_mat.2014 <- lap.2014$LaplacianMatrix
+lap_mat.long <- lap.long$LaplacianMatrix
+lap_mat.2016 <- lap.2016$LaplacianMatrix
 
-# elm.2014 <- eigen(lap_mat.2014)
-# elm.long <- eigen(lap_mat.long)
-# elm.2016 <- eigen(lap_mat.2016)
-# #elm.dummy <- eigen(lap_mat.dummy)
-elm.sequ.2014 <- eigen(lap_mat.sequ.2014)
-elm.sequ.long <- eigen(lap_mat.sequ.long)
-elm.sequ.2016 <- eigen(lap_mat.sequ.2016)
+elm.2014 <- eigen(lap_mat.2014)
+elm.long <- eigen(lap_mat.long)
+elm.2016 <- eigen(lap_mat.2016)
 
 # construct data.frames from eigenvectors with lowest values from each elm result:
-
-# low.2014 <- data.frame("minus_1" = elm.2014$vectors[,ncol(data.2014)-1], "minus_2" = elm.2014$vectors[,ncol(data.2014)-2],
-#                        "minus_3" = elm.2014$vectors[,ncol(data.2014)-3], "minus_4" = elm.2014$vectors[,ncol(data.2014)-4],
-#                        "minus_5" = elm.2014$vectors[,ncol(data.2014)-5], "minus_6" = elm.2014$vectors[,ncol(data.2014)-6],
-#                        "minus_7" = elm.2014$vectors[,ncol(data.2014)-7], "minus_8" = elm.2014$vectors[,ncol(data.2014)-8])
-# low.long <- data.frame("minus_1" = elm.long$vectors[,ncol(data.long)-1], "minus_2" = elm.long$vectors[,ncol(data.long)-2],
-#                       "minus_3" = elm.long$vectors[,ncol(data.long)-3], "minus_4" = elm.long$vectors[,ncol(data.long)-4],
-#                       "minus_5" = elm.long$vectors[,ncol(data.long)-5], "minus_6" = elm.long$vectors[,ncol(data.long)-6],
-#                       "minus_7" = elm.long$vectors[,ncol(data.long)-7], "minus_8" = elm.long$vectors[,ncol(data.long)-8])
-# low.2016 <- data.frame("minus_1" = elm.2016$vectors[,ncol(data.2016)-1], "minus_2" = elm.2016$vectors[,ncol(data.2016)-2],
-#                       "minus_3" = elm.2016$vectors[,ncol(data.2016)-3], "minus_4" = elm.2016$vectors[,ncol(data.2016)-4],
-#                       "minus_5" = elm.2016$vectors[,ncol(data.2016)-5], "minus_6" = elm.2016$vectors[,ncol(data.2016)-6],
-#                       "minus_7" = elm.2016$vectors[,ncol(data.2016)-7], "minus_8" = elm.2016$vectors[,ncol(data.2016)-8])
-# # low.dummy <- data.frame("minus_1" = elm.dummy$vectors[,ncol(data.dummy)-1], "minus_2" = elm.dummy$vectors[,ncol(data.dummy)-2],
-# #                       "minus_3" = elm.dummy$vectors[,ncol(data.dummy)-3], "minus_4" = elm.dummy$vectors[,ncol(data.dummy)-4],
-# #                       "minus_5" = elm.dummy$vectors[,ncol(data.dummy)-5], "minus_6" = elm.dummy$vectors[,ncol(data.dummy)-6],
-# #                       "minus_7" = elm.dummy$vectors[,ncol(data.dummy)-7], "minus_8" = elm.dummy$vectors[,ncol(data.dummy)-8],
-# #                       year = as.factor(stat_names.dummy$year),
-# #                       depth = -as.numeric(stat_names.dummy$depth),
-# #                       count = 1:ncol(data.dummy))
-low.sequ.2014 <- data.frame("minus_1" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-1], "minus_2" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-2],
-                       "minus_3" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-3], "minus_4" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-4],
-                       "minus_5" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-5], "minus_6" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-6],
-                       "minus_7" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-7], "minus_8" = elm.sequ.2014$vectors[,ncol(data.sequ.2014)-8])
-low.sequ.long <- data.frame("minus_1" = elm.sequ.long$vectors[,ncol(data.sequ.long)-1], "minus_2" = elm.sequ.long$vectors[,ncol(data.sequ.long)-2],
-                       "minus_3" = elm.sequ.long$vectors[,ncol(data.sequ.long)-3], "minus_4" = elm.sequ.long$vectors[,ncol(data.sequ.long)-4],
-                       "minus_5" = elm.sequ.long$vectors[,ncol(data.sequ.long)-5], "minus_6" = elm.sequ.long$vectors[,ncol(data.sequ.long)-6],
-                       "minus_7" = elm.sequ.long$vectors[,ncol(data.sequ.long)-7], "minus_8" = elm.sequ.long$vectors[,ncol(data.sequ.long)-8])
-low.sequ.2016 <- data.frame("minus_1" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-1], "minus_2" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-2],
-                       "minus_3" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-3], "minus_4" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-4],
-                       "minus_5" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-5], "minus_6" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-6],
-                       "minus_7" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-7], "minus_8" = elm.sequ.2016$vectors[,ncol(data.sequ.2016)-8])
+low.2014 <- data.frame("minus_1" = elm.2014$vectors[,ncol(data.2014)-1], "minus_2" = elm.2014$vectors[,ncol(data.2014)-2],
+                       "minus_3" = elm.2014$vectors[,ncol(data.2014)-3], "minus_4" = elm.2014$vectors[,ncol(data.2014)-4],
+                       "minus_5" = elm.2014$vectors[,ncol(data.2014)-5], "minus_6" = elm.2014$vectors[,ncol(data.2014)-6],
+                       "minus_7" = elm.2014$vectors[,ncol(data.2014)-7], "minus_8" = elm.2014$vectors[,ncol(data.2014)-8])
+low.long <- data.frame("minus_1" = elm.long$vectors[,ncol(data.long)-1], "minus_2" = elm.long$vectors[,ncol(data.long)-2],
+                       "minus_3" = elm.long$vectors[,ncol(data.long)-3], "minus_4" = elm.long$vectors[,ncol(data.long)-4],
+                       "minus_5" = elm.long$vectors[,ncol(data.long)-5], "minus_6" = elm.long$vectors[,ncol(data.long)-6],
+                       "minus_7" = elm.long$vectors[,ncol(data.long)-7], "minus_8" = elm.long$vectors[,ncol(data.long)-8])
+low.2016 <- data.frame("minus_1" = elm.2016$vectors[,ncol(data.2016)-1], "minus_2" = elm.2016$vectors[,ncol(data.2016)-2],
+                       "minus_3" = elm.2016$vectors[,ncol(data.2016)-3], "minus_4" = elm.2016$vectors[,ncol(data.2016)-4],
+                       "minus_5" = elm.2016$vectors[,ncol(data.2016)-5], "minus_6" = elm.2016$vectors[,ncol(data.2016)-6],
+                       "minus_7" = elm.2016$vectors[,ncol(data.2016)-7], "minus_8" = elm.2016$vectors[,ncol(data.2016)-8])
 ## correlations -------
 #' leaving out the first (smallest non-zero eigenvalue) and the corresponding eigenvector,
 #' each eigenvector is correlated with each column in the original dataset to find correlations
@@ -370,39 +276,6 @@ if (calc.correl){
   cor.coef.2014[cor.coef.2014$order.ev == 1,]
 }
 
-## plots ---------
-if(do.plots){
-  ggplot(low.2016, aes(y = minus_1 , x = -stat_names.2016$depth))+
-    geom_point()
-  
-  ggplot(low.2014, aes(y = minus_2 , x = stat_names.2014$longitude))+
-    geom_point()
-  
-  ggplot(low.long, aes(y = minus_2 , x = stat_names.long$year-2008))+
-    geom_point()
-  
-  ggplot(low.phy, aes(x = minus_1 , y = minus_2, col = depth))+
-    geom_point()+
-    labs(title = "physical subset",
-         subtitle = "seems to pick up time signal!")
-  
-  ggplot(low.all, aes(x = stat_names.all$longitude , y = minus_1, col = minus_1))+
-    geom_point()+
-    geom_smooth(method="lm", se=F)
-  
-  ggplot(low.all, aes(y = stat_names.all$latitude , x = minus_1, col = minus_1))+
-    geom_point()+
-    geom_smooth(method="lm", se=F)
-  
-  
-  ggplot(low.all, aes(x = depth, y = minus_2, col = depth))+
-    geom_point()
-  
-  
-  ggplot(low.all, aes(x = minus_2 , y = minus_3, col =depth))+
-    geom_point()+
-    labs(subtitle = "seems to pick up time signal!")
-}
 ## map plot --------------------------------------------------
 if (plot.wm){
   library(rgdal)                                                                                                      
