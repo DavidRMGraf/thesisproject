@@ -93,7 +93,7 @@ phys_oce.sub.2016 <- subset(phys_oce, select = c("depth", "temp_deg_c", "salinit
 
 # cases need to be complete.cases AND the duplicates need to be excluded:
 # only values from 2014 in the whole Fram Strait:
-columns2keep.2014 <- complete.cases(phys_oce.sub.2014) & phys_oce$keep == 1 & phys_oce$year == 2014 &  phys_oce$depth <= 30 
+columns2keep.2014 <- complete.cases(phys_oce.sub.2014) & phys_oce$keep == 1 & phys_oce$year == 2014
 # all years except 2016, shallower than 30.1 m, in HAUSGARTEN:
 columns2keep.long <- complete.cases(phys_oce.sub.long) & phys_oce$keep == 1 & phys_oce$depth <= 30 & phys_oce$latitude >= 78.5 & phys_oce$latitude <=80 & phys_oce$longitude >= -5 & phys_oce$longitude <= 11
 # # borders of HG after: https://www.awi.de/en/science/biosciences/deep-sea-ecology-and-technology/observatories/lter-observatory-hausgarten.html
