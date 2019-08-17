@@ -96,6 +96,7 @@ for (i in 1:nrow(simil)){
 #     }
 #   }
 # }
+
 library(matrixLaplacian)
 lap <- matrixLaplacian(simil_red, plot2D = F, plot3D = F)
 #lap_mat <- matrix(unlist(lap$LaplacianMatrix), ncol = ncol(lap), byrow = TRUE)

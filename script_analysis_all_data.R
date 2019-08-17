@@ -155,9 +155,10 @@ f.clr.long <- CoDaSeq::codaSeq.clr(f.n0.long, samples.by.row = T)
 f.clr.2016 <- CoDaSeq::codaSeq.clr(f.n0.2016, samples.by.row = T)
 
 ## PCA ------------------------------------------------------
-pca.2014 <- PCA(f.clr.2014, scale.unit = F, ncp = 5, graph = FALSE)
-pca.long <- PCA(f.clr.long, scale.unit = F, ncp = 5, graph = FALSE)
-pca.2016 <- PCA(f.clr.2016, scale.unit = F, ncp = 5, graph = FALSE)
+
+pca.2014 <- PCA(f.clr.2014, scale.unit = F, graph = FALSE)
+pca.long <- PCA(f.clr.long, scale.unit = F, graph = FALSE)
+pca.2016 <- PCA(f.clr.2016, scale.unit = F, graph = FALSE)
 
 # get coordinates in the PCA for each station:
 coords.2014 <- as.data.frame.matrix(pca.2014$ind$coord)
