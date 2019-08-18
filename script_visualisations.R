@@ -10,6 +10,28 @@ library(Cairo)
 dm.plotdata.2016 <- cbind(low.2016, phys_oce.sub.2016, year = stat_names.2016$year, latitude = stat_names.2016$latitude, longitude = stat_names.2016$longitude)
 pca.plotdata.2016 <- cbind(coords.2016, phys_oce.sub.2016, year = stat_names.2016$year, latitude = stat_names.2016$latitude, longitude = stat_names.2016$longitude)
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## correl
+vars.2016 <- cbind(phys_oce.sub.2016, latitude = stat_names.2016$latitude, longitude = stat_names.2016$longitude)
+dm.correl.2016 <- as.data.frame.matrix(matrix(nrow = ncol(vars.2016), ncol = 12))
+colnames(dm.correl.2016) <- rep(c("cor. coeff", "R.squ.", "pval"), 4)
+rownames(dm.correl.2016) <- colnames(vars.2016)
+pca.correl.2016 <- dm.correl.2016
+
+for(i in 1:ncol(vars.2016)){
+  for(j in 1:4){
+    dm.correl.2016[i, (3*j)-2] <- round(cor(vars.2016[,i], low.2016[,j]), 2)
+    dm.correl.2016[i, (3*j)-1] <- round(summary(lm(low.2016[,j]~vars.2016[,i]))$adj.r.squared, 2)
+    dm.correl.2016[i, 3*j] <- summary(lm(low.2016[,j]~vars.2016[,i]))$coefficients[2,4]
+    pca.correl.2016[i, (3*j)-2] <- round(cor(vars.2016[,i], pca.plotdata.2016[,j]), 2)
+    pca.correl.2016[i, (3*j)-1] <- round(summary(lm(pca.plotdata.2016[,j]~vars.2016[,i]))$adj.r.squared, 2)
+    pca.correl.2016[i, 3*j] <- summary(lm(pca.plotdata.2016[,j]~vars.2016[,i]))$coefficients[2,4]
+  }
+}
+pca.correl.2016 <- pca.correl.2016[,-(7:12)]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## DM results
 ## minus_1
 p1 <- ggplot(data = dm.plotdata.2016, aes(x = depth, y = minus_1))+
   geom_point();p1
@@ -30,40 +52,53 @@ summary(lm(dm.plotdata.2016$minus_2~dm.plotdata.2016$icecover))
 ## minus_3 not conclusive
 ## minus_4 not conclusive either
 
-## table:
 
-vars.2016 <- cbind(phys_oce.sub.2016, latitude = stat_names.2016$latitude, longitude = stat_names.2016$longitude)
-dm.correl.2016 <- as.data.frame.matrix(matrix(nrow = ncol(vars.2016), ncol = 8))
-colnames(dm.correl.2016) <- rep(c("cor. coeff", "R.squ."), 4)
-rownames(dm.correl.2016) <- colnames(vars.2016)
-pca.correl.2016 <- dm.correl.2016
-
-for(i in 1:ncol(vars.2016)){
-  for(j in 1:4){
-   dm.correl.2016[i, (2*j)-1] <- round(cor(vars.2016[,i], low.2016[,j]), 3)
-   dm.correl.2016[i, 2*j] <- round(summary(lm(low.2016[,j]~vars.2016[,i]))$adj.r.squared, 3)
-   pca.correl.2016[i, (2*j)-1] <- round(cor(vars.2016[,i], pca.plotdata.2016[,j]), 3)
-   pca.correl.2016[i, 2*j] <- round(summary(lm(pca.plotdata.2016[,j]~vars.2016[,i]))$adj.r.squared, 3)
-   
-  }
-}
-dm.correl.2016 <- dm.correl.2016[order(dm.correl.2016[,2], decreasing = T),]
-pca.correl.2016 <- pca.correl.2016[,-(5:8)]
-pca.correl.2016 <- pca.correl.2016[order(pca.correl.2016[,2], decreasing = T),]
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## PCA results
 ## only first two dims!
 # Dim.1
-p1 <- ggplot(pca.plotdata.2016, aes(x = depth, y = Dim.1))+
-  geom_point();p1
-summary(lm(pca.plotdata.2016$Dim.1~pca.plotdata.2016$depth))
+
+png("~/Studium/19SS/BA/ba_thesis_report/pca_plots/2016_pc1.png", width = 600, height = 450)
+ggplot(pca.plotdata.2016, aes(depth, Dim.1))+
+  geom_point(size = 3)+
+  labs(x = "Depth",
+       y = "Dimension 1")+
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20),
+        strip.text =  element_text(size = 20))
+dev.off()
+
+# p1 <- ggplot(pca.plotdata.2016, aes(x = depth, y = Dim.1))+
+#   geom_point();p1
+# summary(lm(pca.plotdata.2016$Dim.1~pca.plotdata.2016$depth))
 
 ## Dim.2/Dim.3 - temp vs. icecov
-p2 <- ggplot(pca.plotdata.2016, aes(x = temp_deg_c, y = Dim.2))+
-  geom_point();p2
-summary(lm(pca.plotdata.2016$Dim.2~pca.plotdata.2016$temp_deg_c))
-p4 <- ggplot(pca.plotdata.2016, aes(x = icecover, y = Dim.2))+
-  geom_point();p4
-summary(lm(pca.plotdata.2016$Dim.2~pca.plotdata.2016$icecover))
+
+comp_2.2016 <- data.frame(Dim.2 = rep(pca.plotdata.2016$Dim.2, 4), 
+                          value = c(pca.plotdata.2016$temp_deg_c, pca.plotdata.2016$longitude,  pca.plotdata.2016$icecover,  pca.plotdata.2016$salinity),
+                          var = factor(c(rep("Temperature", 64), rep("Longitude", 64), rep("Ice Coverage", 64), rep("Salinity", 64)), 
+                                       levels = c("Temperature", "Longitude", "Ice Coverage", "Salinity")))
+
+png("~/Studium/19SS/BA/ba_thesis_report/pca_plots/2016_pc2.png", width = 1200, height = 750)
+ggplot(comp_2.2016, aes(value, Dim.2))+
+  geom_point(size = 3)+
+  labs(x = "Value",
+       y = "Dimension 2")+
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20),
+        strip.text =  element_text(size = 20))+
+  facet_wrap(~var, scales = "free")
+dev.off()
+
+
+
+
+# p2 <- ggplot(pca.plotdata.2016, aes(x = temp_deg_c, y = Dim.2))+
+#   geom_point();p2
+# summary(lm(pca.plotdata.2016$Dim.2~pca.plotdata.2016$temp_deg_c))
+# p4 <- ggplot(pca.plotdata.2016, aes(x = icecover, y = Dim.2))+
+#   geom_point();p4
+# summary(lm(pca.plotdata.2016$Dim.2~pca.plotdata.2016$icecover))
 #' higher adj. R^2 of the lm for temp. here as well -> temp!
 
 
@@ -72,6 +107,28 @@ summary(lm(pca.plotdata.2016$Dim.2~pca.plotdata.2016$icecover))
 dm.plotdata.2014 <- cbind(low.2014, phys_oce.sub.2014, year = stat_names.2014$year, latitude = stat_names.2014$latitude, longitude = stat_names.2014$longitude)
 pca.plotdata.2014 <- cbind(coords.2014, phys_oce.sub.2014, year = stat_names.2014$year, latitude = stat_names.2014$latitude, longitude = stat_names.2014$longitude)
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## correl 2014
+vars.2014 <- cbind(phys_oce.sub.2014, latitude = stat_names.2014$latitude, longitude = stat_names.2014$longitude)
+dm.correl.2014 <- as.data.frame.matrix(matrix(nrow = ncol(vars.2014), ncol = 12))
+colnames(dm.correl.2014) <- rep(c("cor. coeff", "R.squ.", "pval"), 4)
+rownames(dm.correl.2014) <- colnames(vars.2014)
+pca.correl.2014 <- dm.correl.2014
+
+for(i in 1:ncol(vars.2014)){
+  for(j in 1:4){
+    dm.correl.2014[i, (3*j)-2] <- round(cor(vars.2014[,i], low.2014[,j]), 2)
+    dm.correl.2014[i, (3*j)-1] <- round(summary(lm(low.2014[,j]~vars.2014[,i]))$adj.r.squared, 2)
+    dm.correl.2014[i, 3*j] <- summary(lm(low.2014[,j]~vars.2014[,i]))$coefficients[2,4]
+    pca.correl.2014[i, (3*j)-2] <- round(cor(vars.2014[,i], pca.plotdata.2014[,j]), 2)
+    pca.correl.2014[i, (3*j)-1] <- round(summary(lm(pca.plotdata.2014[,j]~vars.2014[,i]))$adj.r.squared, 2)
+    pca.correl.2014[i, 3*j] <- summary(lm(pca.plotdata.2014[,j]~vars.2014[,i]))$coefficients[2,4]
+  }
+}
+pca.correl.2014 <- pca.correl.2014[,-(7:12)]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## DM results
 ## minus_1
 
 minus_1.2014 <- data.frame(minus_1 = rep(dm.plotdata.2014$minus_1, 3), 
@@ -80,7 +137,7 @@ minus_1.2014 <- data.frame(minus_1 = rep(dm.plotdata.2014$minus_1, 3),
                                         levels = c("Salinity", "Longitude", "Temperature"))
 )
 
-png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/2014_dc1.png", width = 1200, height = 679, )
+png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/2014_dc1.png", width = 1200, height = 400)
 ggplot(minus_1.2014, aes(value, minus_1))+
   geom_point(size = 3)+
   labs(x = "Value",
@@ -91,75 +148,53 @@ ggplot(minus_1.2014, aes(value, minus_1))+
   facet_wrap(~var, scales = "free")
 dev.off()
 
-# png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/2014_dc1_sal.png", width = 889, height = 679)
-# p4 <- ggplot(data = dm.plotdata.2014, aes(x = salinity, y = minus_1))+
-#   geom_point(size = 4)+
-#   labs(x = "Salinity",
-#        y = "Component 1")+
+## minus_2
+minus_2.2014 <- data.frame(minus_2 = rep(dm.plotdata.2014$minus_2, 2), 
+                           value = c(dm.plotdata.2014$depth, dm.plotdata.2014$longitude),
+                           var = factor(c(rep("Depth", 42),  rep("Longitude", 42)), 
+                                        levels = c("Depth", "Longitude"))
+)
+
+png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/2014_dc2.png", width = 1140, height = 570)
+ggplot(minus_2.2014, aes(value, minus_2))+
+  geom_point(size = 3)+
+  labs(x = "Value",
+       y = "Component 2")+
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20),
+        strip.text =  element_text(size = 20))+
+  facet_wrap(~var, scales = "free")
+dev.off()
+
+## minus_3
+# minus_3.2014 <- data.frame(minus_3 = rep(dm.plotdata.2014$minus_3, 4), 
+#                            value = c(dm.plotdata.2014$nitrogen_species, dm.plotdata.2014$salinity, dm.plotdata.2014$SiOH4_mumol_l, dm.plotdata.2014$PO4_mumol_l),
+#                            var = factor(c(rep("Nitrogen Species", 42), rep("Salinity", 42), rep("Silicate", 42),  rep("Phosphate", 42)), 
+#                                         levels = c("Nitrogen Species", "Salinity", "Silicate", "Phosphate"))
+# )
+# 
+# png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/2014_dc3.png", width = 1200, height = 750)
+# ggplot(minus_3.2014, aes(value, minus_3))+
+#   geom_point(size = 3)+
+#   labs(x = "Value",
+#        y = "Component 3")+
 #   theme(axis.text = element_text(size = 18),
-#         axis.title = element_text(size = 20));p4
+#         axis.title = element_text(size = 20),
+#         strip.text =  element_text(size = 20))+
+#   facet_wrap(~var, scales = "free")
 # dev.off()
 
-p1 <- ggplot(data = dm.plotdata.2014, aes(x = longitude, y = minus_1))+
-  geom_point()+
-  labs(x = "Longitude",
-       y = "Component 1")+
-  theme(axis.text = element_text(size = 18),
-        axis.title = element_text(size = 20));p1
-
-p3 <- ggplot(data = dm.plotdata.2014, aes(x = temp_deg_c, y = minus_1))+
-  geom_point()+
-  labs(x = "Temperature",
-       y = "Component 1")+
-  theme(axis.text = element_text(size = 18),
-        axis.title = element_text(size = 20));p3
-
-
-
-p2 <- ggplot(data = dm.plotdata.2014, aes(x = latitude, y = minus_1))+
-  geom_point()+
-  labs(x = "Latitude",
-       y = "Component 1")+
-  theme(axis.text = element_text(size = 18),
-        axis.title = element_text(size = 20));p2
-summary(lm(dm.plotdata.2014$minus_1~dm.plotdata.2014$latitude))
-
-
-
-## minus_2
-p5 <- ggplot(data = dm.plotdata.2014, aes(x = depth, y = minus_2))+
-  geom_point();p5
-summary(lm(dm.plotdata.2014$minus_2~dm.plotdata.2014$depth))
-
-vars.2014 <- cbind(phys_oce.sub.2014, latitude = stat_names.2014$latitude, longitude = stat_names.2014$longitude)
-dm.correl.2014 <- as.data.frame.matrix(matrix(nrow = ncol(vars.2014), ncol = 8))
-colnames(dm.correl.2014) <- rep(c("cor. coeff", "R.squ."), 4)
-rownames(dm.correl.2014) <- colnames(vars.2014)
-pca.correl.2014 <- dm.correl.2014
-
-for(i in 1:ncol(vars.2014)){
-  for(j in 1:4){
-    dm.correl.2014[i, (2*j)-1] <- round(cor(vars.2014[,i], low.2014[,j]), 3)
-    dm.correl.2014[i, 2*j] <- round(summary(lm(low.2014[,j]~vars.2014[,i]))$adj.r.squared, 3)
-    pca.correl.2014[i, (2*j)-1] <- round(cor(vars.2014[,i], pca.plotdata.2014[,j]), 3)
-    pca.correl.2014[i, 2*j] <- round(summary(lm(pca.plotdata.2014[,j]~vars.2014[,i]))$adj.r.squared, 3)
-    
-  }
-}
-dm.correl.2014 <- dm.correl.2014[order(dm.correl.2014[,2], decreasing = T),]
-pca.correl.2014 <- pca.correl.2014[,-(5:8)]
-pca.correl.2014 <- pca.correl.2014[order(pca.correl.2014[,2], decreasing = T),]
-
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## PCA results
+## Dim.1
 ## only first two dims
-## Dim.1 -> longitude!
 comp_1.2014 <- data.frame(Dim.1 = rep(pca.plotdata.2014$Dim.1, 3), 
                            value = c(pca.plotdata.2014$salinity, pca.plotdata.2014$longitude, pca.plotdata.2014$temp_deg_c),
                            var = factor(c(rep("Salinity", 42), rep("Longitude", 42),  rep("Temperature", 42)), 
                                         levels = c("Salinity", "Longitude", "Temperature"))
 )
 
-png("~/Studium/19SS/BA/ba_thesis_report/pca_plots/2014_pc1.png", width = 1200, height = 450)
+png("~/Studium/19SS/BA/ba_thesis_report/pca_plots/2014_pc1.png", width = 1200, height = 400)
 ggplot(comp_1.2014, aes(value, Dim.1))+
   geom_point(size = 3)+
   labs(x = "Value",
@@ -170,16 +205,8 @@ ggplot(comp_1.2014, aes(value, Dim.1))+
   facet_wrap(~var, scales = "free")
 dev.off()
 
-# p1 <- ggplot(pca.plotdata.2014, aes(x = longitude, y = Dim.1))+
-#   geom_point();p1
-# summary(lm(pca.plotdata.2014$Dim.1~pca.plotdata.2014$longitude))
-# 
-# p1 <- ggplot(pca.plotdata.2014, aes(x = temp_deg_c, y = Dim.1))+
-#   geom_point();p1
-# summary(lm(pca.plotdata.2014$Dim.1~pca.plotdata.2014$temp_deg_c))
-#' -> longitude has higher mult. R^2 than temp! -> longitude
+## Dim.2
 
-## Dim.2 -> depth!
 png("~/Studium/19SS/BA/ba_thesis_report/pca_plots/2014_pc2.png", width = 600, height = 452)
 p2 <- ggplot(pca.plotdata.2014, aes(x = depth, y = Dim.2))+
   geom_point(size = 3)+
@@ -188,41 +215,55 @@ p2 <- ggplot(pca.plotdata.2014, aes(x = depth, y = Dim.2))+
   theme(axis.text = element_text(size = 18),
         axis.title = element_text(size = 20));p2
 dev.off()
-summary(lm(pca.plotdata.2014$Dim.2~pca.plotdata.2014$depth))
-#' depth!
 
 ## long -------
 dm.plotdata.long <- cbind(low.long, phys_oce.sub.long, year = stat_names.long$year, latitude = stat_names.long$latitude, longitude = stat_names.long$longitude)
 pca.plotdata.long <- cbind(coords.long, phys_oce.sub.long, year = stat_names.long$year, latitude = stat_names.long$latitude, longitude = stat_names.long$longitude)
 
-## minus_1
-p1 <- ggplot(data = dm.plotdata.long, aes(y = temp_deg_c-2, x = year))+
-  geom_point();p1
-
-p2 <- ggplot(data = dm.plotdata.long, aes(x = year, y = minus_1))+
-  geom_point();p2
-
-scree_long <- fviz_eig(pca.long, addlabels = TRUE, ylim = c(0, 40), main = "long")
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## correl long
 vars.long <- cbind(phys_oce.sub.long, latitude = stat_names.long$latitude, longitude = stat_names.long$longitude, year = stat_names.long$year)
-dm.correl.long <- as.data.frame.matrix(matrix(nrow = ncol(vars.long), ncol = 8))
-colnames(dm.correl.long) <- rep(c("cor. coeff", "R.squ."), 4)
+dm.correl.long <- as.data.frame.matrix(matrix(nrow = ncol(vars.long), ncol = 12))
+colnames(dm.correl.long) <- rep(c("cor. coeff", "R.squ.", "pval"), 4)
 rownames(dm.correl.long) <- colnames(vars.long)
 pca.correl.long <- dm.correl.long
 
 for(i in 1:ncol(vars.long)){
   for(j in 1:4){
-    dm.correl.long[i, (2*j)-1] <- round(cor(vars.long[,i], low.long[,j]), 3)
-    dm.correl.long[i, 2*j] <- round(summary(lm(low.long[,j]~vars.long[,i]))$adj.r.squared, 3)
-    pca.correl.long[i, (2*j)-1] <- round(cor(vars.long[,i], pca.plotdata.long[,j]), 3)
-    pca.correl.long[i, 2*j] <- round(summary(lm(pca.plotdata.long[,j]~vars.long[,i]))$adj.r.squared, 3)
-    
+    dm.correl.long[i, (3*j)-2] <- round(cor(vars.long[,i], low.long[,j]), 2)
+    dm.correl.long[i, (3*j)-1] <- round(summary(lm(low.long[,j]~vars.long[,i]))$adj.r.squared, 2)
+    dm.correl.long[i, 3*j] <- summary(lm(low.long[,j]~vars.long[,i]))$coefficients[2,4]
+    pca.correl.long[i, (3*j)-2] <- round(cor(vars.long[,i], pca.plotdata.long[,j]), 2)
+    pca.correl.long[i, (3*j)-1] <- round(summary(lm(pca.plotdata.long[,j]~vars.long[,i]))$adj.r.squared, 2)
+    pca.correl.long[i, 3*j] <- summary(lm(pca.plotdata.long[,j]~vars.long[,i]))$coefficients[2,4]
   }
 }
-dm.correl.long <- dm.correl.long[order(dm.correl.long[,2], decreasing = T),]
-pca.correl.long <- pca.correl.long[,-(7:8)]
-pca.correl.long <- pca.correl.long[order(pca.correl.long[,2], decreasing = T),]
+pca.correl.long <- pca.correl.long[,-(10:12)]
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## DM results
+## minus_1
+minus_1.long <- data.frame(minus_1 = rep(dm.plotdata.long$minus_1, 3), 
+                           value = c(dm.plotdata.long$temp_deg_c, dm.plotdata.long$salinity, dm.plotdata.long$longitude),
+                           var = factor(c(rep("Temperature", 46), rep("Salinity", 46),  rep("Longitude", 46)), 
+                                        levels = c("Temperature", "Salinity", "Longitude"))
+)
+
+png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/long_dc1.png", width = 1200, height = 450)
+ggplot(minus_1.long, aes(value, minus_1))+
+  geom_point(size = 3)+
+  labs(x = "Value",
+       y = "Component 1")+
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20),
+        strip.text =  element_text(size = 20))+
+  facet_wrap(~var, scales = "free")
+dev.off()
+
+## minus_2
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## PCA results
 ## first three dims
 ## Dim.1
 # temperature (!) and salinity, longitude (+/-)
@@ -231,7 +272,7 @@ comp_1.long <- data.frame(Dim.1 = rep(pca.plotdata.long$Dim.1, 3),
                           var = factor(c(rep("Temperature", 46), rep("Salinity", 46), rep("Longitude", 46)), 
                                        levels = c("Temperature", "Salinity", "Longitude")))
 
-png("~/Studium/19SS/BA/ba_thesis_report/pca_plots/long_pc1.png", width = 1200, height = 450)
+png("~/Studium/19SS/BA/ba_thesis_report/pca_plots/long_pc1.png", width = 1200, height = 400)
 ggplot(comp_1.long, aes(value, Dim.1))+
   geom_point(size = 3)+
   labs(x = "Value",
@@ -241,9 +282,6 @@ ggplot(comp_1.long, aes(value, Dim.1))+
         strip.text =  element_text(size = 20))+
   facet_wrap(~var, scales = "free")
 dev.off()
-
-# p1 <- ggplot(pca.plotdata.long, aes(x = temp_deg_c-2, y = Dim.1))+
-#   geom_point();p1
 
 ## Dim.2
 ## depth and year
@@ -263,14 +301,22 @@ ggplot(comp_2.long, aes(value, Dim.2))+
   facet_wrap(~var, scales = "free")
 dev.off()
 
-
- 
-# p2 <- ggplot(pca.plotdata.long, aes(x = year, y = Dim.2))+
-#   geom_point();p2
-
 ## Dim.3
-p3 <- ggplot(pca.plotdata.long, aes(x = SiOH4_mumol_l, y = Dim.3))+
-  geom_point();p3
+comp_3.long <- data.frame(Dim.3 = rep(pca.plotdata.long$Dim.3, 4), 
+                          value = c(pca.plotdata.long$salinity, pca.plotdata.long$SiOH4_mumol_l,  pca.plotdata.long$year,  pca.plotdata.long$longitude),
+                          var = factor(c(rep("Salinity", 46), rep("Silicate", 46), rep("Year", 46), rep("Longitude", 46)), 
+                                       levels = c("Salinity", "Silicate", "Year", "Longitude")))
+
+png("~/Studium/19SS/BA/ba_thesis_report/pca_plots/long_pc3.png", width = 1200, height = 750)
+ggplot(comp_3.long, aes(value, Dim.3))+
+  geom_point(size = 3)+
+  labs(x = "Value",
+       y = "Dimension 3")+
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20),
+        strip.text =  element_text(size = 20))+
+  facet_wrap(~var, scales = "free")
+dev.off()
 
 # screeplots -----------
 
