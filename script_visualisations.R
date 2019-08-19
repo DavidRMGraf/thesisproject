@@ -226,6 +226,36 @@ dev.off()
 
 ## minus_2
 
+minus_2.long <- data.frame(minus_2 = rep(dm.plotdata.long$minus_2, 3), 
+                           value = c(dm.plotdata.long$depth, dm.plotdata.long$longitude, dm.plotdata.long$SiOH4_mumol_l),
+                           var = factor(c(rep("Depth", 46), rep("Silicate", 46), rep("Longitude", 46)), 
+                                        levels = c("Depth", "Silicate", "Longitude"))
+)
+
+png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/long_dc2.png", width = 1200, height = 450)
+ggplot(minus_2.long, aes(value, minus_2))+
+  geom_point(size = 3)+
+  labs(x = "Value",
+       y = "Component 2")+
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20),
+        strip.text =  element_text(size = 20))+
+  facet_wrap(~var, scales = "free")
+dev.off()
+
+## minus_3
+
+png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/long_dc3.png", width = 600, height = 450)
+ggplot(dm.plotdata.long, aes(year, minus_2))+
+  geom_point(size = 3)+
+  labs(x = "Year",
+       y = "Component 3")+
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20))
+dev.off()
+
+## minus_4
+
 ## 2016 -----------
 dm.plotdata.2016 <- cbind(low.2016, phys_oce.sub.2016, year = stat_names.2016$year, latitude = stat_names.2016$latitude, longitude = stat_names.2016$longitude)
 pca.plotdata.2016 <- cbind(coords.2016, phys_oce.sub.2016, year = stat_names.2016$year, latitude = stat_names.2016$latitude, longitude = stat_names.2016$longitude)
@@ -253,24 +283,46 @@ pca.correl.2016 <- pca.correl.2016[,-(7:12)]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## DM results
 ## minus_1
-p1 <- ggplot(data = dm.plotdata.2016, aes(x = depth, y = minus_1))+
-  geom_point();p1
-summary(lm(dm.plotdata.2016$minus_1~dm.plotdata.2016$depth))
+
+png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/2016_dc1.png", width = 600, height = 450)
+ggplot(dm.plotdata.2016, aes(depth, minus_1))+
+  geom_point(size = 3)+
+  labs(x = "Depth",
+       y = "Component 1")+
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20))
+dev.off()
 
 ## minus_2
-p2 <- ggplot(data = dm.plotdata.2016, aes(x = temp_deg_c, y = minus_2))+
-  geom_point();p2
-summary(lm(dm.plotdata.2016$minus_2~dm.plotdata.2016$temp_deg_c))
 
-p3 <- ggplot(data = dm.plotdata.2016, aes(x = icecover, y = minus_2))+
-  geom_point();p3
-summary(lm(dm.plotdata.2016$minus_2~dm.plotdata.2016$icecover))
+minus_2.2016 <- data.frame(minus_2 = rep(dm.plotdata.2016$minus_2, 4), 
+                           value = c(dm.plotdata.2016$temp_deg_c, dm.plotdata.2016$longitude, dm.plotdata.2016$icecover, dm.plotdata.2016$salinity),
+                           var = factor(c(rep("Temperature", 64), rep("Longitude", 64), rep("Ice Coverage", 64), rep("Salinity", 64)), 
+                                        levels = c("Temperature", "Longitude", "Ice Coverage", "Salinity"))
+)
 
-#' as p2 has a higher adj.R^2, it is concluded that temperature is likely the right
-#' controlling variable, rather than icecover -> temp!
+png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/2016_dc2.png", width = 1200, height = 750)
+ggplot(minus_2.2016, aes(value, minus_2))+
+  geom_point(size = 3)+
+  labs(x = "Value",
+       y = "Component 2")+
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20),
+        strip.text =  element_text(size = 20))+
+  facet_wrap(~var, scales = "free")
+dev.off()
 
 ## minus_3 not conclusive
-## minus_4 not conclusive either
+## minus_4 
+png("~/Studium/19SS/BA/ba_thesis_report/dm_plots/2016_dc4.png", width = 600, height = 450)
+ggplot(dm.plotdata.2016, aes(flurom_arbit, minus_4))+
+  geom_point(size = 3)+
+  labs(x = "Fluorometry",
+       y = "Component 4")+
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20))
+dev.off()
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~
