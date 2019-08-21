@@ -7,8 +7,7 @@ graphics.off()
 setwd("~/Studium/19SS/BA/thesisproject")
 library(maps)
 library(mapdata)
-library(maptools)  #for shapefiles
-library(scales)  #for transparency
+
 library(Cairo)
 # get analysis data:
 source("script_analysis_all_data.r")
@@ -23,7 +22,9 @@ mapplot <- function(dat.in){
   rect(xleft = -5, ybottom = 78.5, xright = 11, ytop = 80, col = NA, border = "black", lty = "dotted", lwd = 1)
   map.axes()
 }
+
 mapplot(stat_names.2014)
+
 ## 2014 map: -------
 Cairo(file="subset_2014.png", 
       type="png",
